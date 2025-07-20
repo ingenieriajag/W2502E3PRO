@@ -1,12 +1,15 @@
-' ===== MÓDULO 3: CONFIGURACIÓN OPEX =====
+' ===== MÓDULO 3: CONFIGURACIÓN OPEX COMPLETO =====
+Option Explicit
+
 Sub ConfigurarHojaOPEX()
     Dim ws As Worksheet
     Set ws = Worksheets("OPEX")
     ws.Activate
     
+    ' Limpiar hoja completamente
     ws.Cells.Clear
     
-    ' Crear encabezado comparativo (Vapor vs Bomba Calor)
+    ' Configurar encabezados principales
     With ws
         .Range("A1").Value = "ANÁLISIS OPEX COMPARATIVO - VAPOR vs BOMBA CALOR CO2"
         .Range("A1:F1").Merge
@@ -15,165 +18,394 @@ Sub ConfigurarHojaOPEX()
         .Range("A1").Interior.Color = RGB(173, 216, 230)
         .Range("A1").HorizontalAlignment = xlCenter
         
-        ' Encabezados que muestran claramente la comparación
-        .Range("A3").Value = "CATEGORÍA"
-        .Range("B3").Value = "CONCEPTO"
-        .Range("C3").Value = "SISTEMA VAPOR"     ' EDITABLE - situación actual
-        .Range("D3").Value = "BOMBA CALOR"      ' EDITABLE - propuesta
-        .Range("E3").Value = "AHORRO"           ' CALCULADO automáticamente
-        .Range("F3").Value = "% REDUCCIÓN"     ' CALCULADO automáticamente
+        ' Subtítulo con información del proyecto
+        .Range("A2").Value = "Proyecto BAXTER S.A. - Datos Estudio W2501PRINF005REV0"
+        .Range("A2:F2").Merge
+        .Range("A2").Font.Size = 12
+        .Range("A2").Interior.Color = RGB(230, 230, 250)
+        .Range("A2").HorizontalAlignment = xlCenter
         
-        .Range("A3:F3").Font.Bold = True
-        .Range("A3:F3").Interior.Color = RGB(144, 238, 144)
-        .Range("A3:F3").Borders.LineStyle = xlContinuous
+        ' Encabezados de tabla comparativa
+        .Range("A4").Value = "CATEGORÍA"
+        .Range("B4").Value = "CONCEPTO"
+        .Range("C4").Value = "SISTEMA VAPOR"     ' EDITABLE
+        .Range("D4").Value = "BOMBA CALOR"      ' EDITABLE
+        .Range("E4").Value = "AHORRO"           ' CALCULADO
+        .Range("F4").Value = "% REDUCCIÓN"     ' CALCULADO
         
-        ' Anchos optimizados para la comparación
+        .Range("A4:F4").Font.Bold = True
+        .Range("A4:F4").Interior.Color = RGB(144, 238, 144)
+        .Range("A4:F4").Borders.LineStyle = xlContinuous
+        
+        ' Anchos de columna optimizados
         .Columns("A").ColumnWidth = 20
-        .Columns("B").ColumnWidth = 30
-        .Columns("C").ColumnWidth = 15
-        .Columns("D").ColumnWidth = 15
-        .Columns("E").ColumnWidth = 15
-        .Columns("F").ColumnWidth = 12
+        .Columns("B").ColumnWidth = 35
+        .Columns("C").ColumnWidth = 18
+        .Columns("D").ColumnWidth = 18
+        .Columns("E").ColumnWidth = 18
+        .Columns("F").ColumnWidth = 15
     End With
     
-    ' Primero configuramos los parámetros base editables
-    ConfigurarParametrosBase ws
+    ' Insertar todos los datos OPEX del estudio BAXTER
+    InsertarDatosOPEXCompleto ws
     
-    ' Luego insertamos todos los datos OPEX
-    InsertarDatosOPEX ws
-    
-    ' Aplicamos formatos para identificar celdas editables
+    ' Aplicar formatos y validaciones
     AplicarFormatosOPEX ws
-End Sub
-
-
-Private Sub ConfigurarParametrosBase(ws As Worksheet)
-    Dim wsBase As Worksheet
-    Set wsBase = Worksheets("Datos_Base")
     
-    ' Esta hoja será el "centro de control" de parámetros editables
-    With wsBase
-        .Cells.Clear
-        
-        .Range("A1").Value = "PARÁMETROS BASE EDITABLES - ANÁLISIS BAXTER"
-        .Range("A1:C1").Merge
-        .Range("A1").Font.Bold = True
-        .Range("A1").Font.Size = 14
-        .Range("A1").Interior.Color = RGB(173, 216, 230)
-        
-        ' Precios de energía (fundamentales para el análisis)
-        .Range("A3").Value = "Precio Gas Natural ($/kWh):"
-        .Range("B3").Value = 0.041    ' Del estudio BAXTER - EDITABLE
-        .Range("C3").Value = "Base datos UPME Colombia"
-        
-        .Range("A4").Value = "Precio Electricidad ($/kWh):"
-        .Range("B4").Value = 0.113    ' Del estudio BAXTER - EDITABLE
-        .Range("C4").Value = "Tarifa industrial promedio"
-        
-        ' Parámetros financieros
-        .Range("A5").Value = "Escalación Anual (%):"
-        .Range("B5").Value = 0.05     ' 5% anual - EDITABLE
-        .Range("C5").Value = "Inflación esperada energía"
-        
-        .Range("A6").Value = "Tasa Descuento (%):"
-        .Range("B6").Value = 0.08     ' 8% corporativa BAXTER - EDITABLE
-        .Range("C6").Value = "WACC corporativo BAXTER"
-        
-        .Range("A7").Value = "Valor Residual (% CAPEX):"
-        .Range("B7").Value = 0.15     ' 15% del CAPEX - EDITABLE
-        .Range("C7").Value = "Valor equipos a 15 años"
-        
-        ' Marcar las celdas editables visualmente
-        .Range("B3:B7").Interior.Color = RGB(255, 255, 224)  ' Amarillo claro
-        .Range("B3:B7").Borders.LineStyle = xlContinuous
-        
-        ' Aplicar formatos apropiados
-        .Range("B5:B7").NumberFormat = "0.0%"    ' Porcentajes
-        .Range("B3:B4").NumberFormat = "$0.000"  ' Precios con 3 decimales
-        
-        .Range("A3:C7").Borders.LineStyle = xlContinuous
-    End With
+    ' Crear área de métricas adicionales
+    CrearMetricasAdicionales ws
 End Sub
-Private Sub InsertarDatosOPEX(ws As Worksheet)
+
+Private Sub InsertarDatosOPEXCompleto(ws As Worksheet)
     Dim fila As Integer
-    fila = 4
+    fila = 5  ' Empezar después de encabezados
     
-    ' === ENERGÍA (La categoría más importante) ===
+    ' ===== ENERGÍA (Categoría más importante) =====
     ws.Range("A" & fila).Value = "ENERGÍA"
     ws.Range("A" & fila).Font.Bold = True
     ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    ws.Range("A" & fila & ":F" & fila).Merge
     fila = fila + 1
     
-    ' Consumo energético base (datos del estudio BAXTER)
+    ' Consumo energético - datos exactos del estudio BAXTER
     ws.Range("B" & fila).Value = "Consumo energético (MWh/año)"
-    ws.Range("C" & fila).Value = 1583    ' Vapor - EDITABLE
-    ws.Range("D" & fila).Value = 528     ' Bomba Calor - EDITABLE
-    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila      ' Ahorro automático
-    ws.Range("F" & fila).Formula = "=E" & fila & "/C" & fila     ' % reducción automático
-    
-    ' Marcar como editables
-    ws.Range("C" & fila & ":D" & fila).Interior.Color = RGB(255, 255, 224)
-    fila = fila + 1
-    
-    ' Costo energía (CALCULADO desde parámetros base)
-    ws.Range("B" & fila).Value = "Costo energía"
-    ' FÓRMULAS INTELIGENTES que toman precios de Datos_Base
-    ws.Range("C" & fila).Formula = "=C" & (fila - 1) & "*Datos_Base!$B$3"    ' Consumo vapor * precio gas
-    ws.Range("D" & fila).Formula = "=D" & (fila - 1) & "*Datos_Base!$B$4"    ' Consumo eléctrico * precio electricidad
+    ws.Range("C" & fila).Value = 1583          ' Vapor - EDITABLE
+    ws.Range("D" & fila).Value = 528           ' Bomba Calor - EDITABLE  
     ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
-    ws.Range("F" & fila).Formula = "=E" & fila & "/C" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
     fila = fila + 1
     
-    ' === MANTENIMIENTO ===
+    ' Costo energía - CALCULADO dinámicamente desde parámetros base
+    ws.Range("B" & fila).Value = "Costo energía ($/año)"
+    ws.Range("C" & fila).Formula = "=C" & (fila - 1) & "*Datos_Base!$B$3"  ' Gas natural
+    ws.Range("D" & fila).Formula = "=D" & (fila - 1) & "*Datos_Base!$B$4"  ' Electricidad
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' ===== MANTENIMIENTO =====
     ws.Range("A" & fila).Value = "MANTENIMIENTO"
     ws.Range("A" & fila).Font.Bold = True
     ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    ws.Range("A" & fila & ":F" & fila).Merge
     fila = fila + 1
     
-    ' Datos de mantenimiento del estudio BAXTER
-    Dim datosMant As Variant
-    datosMant = Array( _
-        Array("Preventivo", 18000, 8500), _
-        Array("Correctivo", 12000, 4200), _
-        Array("Inspecciones", 8500, 3200) _
-    )
+    ' Mantenimiento preventivo
+    ws.Range("B" & fila).Value = "Preventivo"
+    ws.Range("C" & fila).Value = 18000         ' EDITABLE
+    ws.Range("D" & fila).Value = 8500          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
     
-    Dim i As Integer
-    For i = 0 To UBound(datosMant)
-        ws.Range("B" & fila).Value = datosMant(i)(0)
-        ws.Range("C" & fila).Value = datosMant(i)(1)    ' EDITABLE
-        ws.Range("D" & fila).Value = datosMant(i)(2)    ' EDITABLE
-        ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
-        ws.Range("F" & fila).Formula = "=E" & fila & "/C" & fila
-        ws.Range("C" & fila & ":D" & fila).Interior.Color = RGB(255, 255, 224)
-        fila = fila + 1
-    Next i
+    ' Mantenimiento correctivo
+    ws.Range("B" & fila).Value = "Correctivo"
+    ws.Range("C" & fila).Value = 12000         ' EDITABLE
+    ws.Range("D" & fila).Value = 4200          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
     
-    ' Continuar con SERVICIOS, PERSONAL, OTROS siguiendo el mismo patrón...
-    ' [Código completo incluiría todas las categorías del estudio BAXTER]
+    ' Inspecciones
+    ws.Range("B" & fila).Value = "Inspecciones"
+    ws.Range("C" & fila).Value = 8500          ' EDITABLE
+    ws.Range("D" & fila).Value = 3200          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
     
-    ' === TOTALES DINÁMICOS ===
-    filaTotal = fila + 2
+    ' ===== SERVICIOS =====
+    ws.Range("A" & fila).Value = "SERVICIOS"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    ws.Range("A" & fila & ":F" & fila).Merge
+    fila = fila + 1
+    
+    ' Químicos caldera
+    ws.Range("B" & fila).Value = "Químicos caldera"
+    ws.Range("C" & fila).Value = 6500          ' EDITABLE
+    ws.Range("D" & fila).Value = 0             ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' Agua WFI reposición
+    ws.Range("B" & fila).Value = "Agua WFI reposición"
+    ws.Range("C" & fila).Value = 15680         ' EDITABLE
+    ws.Range("D" & fila).Value = 2140          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' Análisis calidad
+    ws.Range("B" & fila).Value = "Análisis calidad"
+    ws.Range("C" & fila).Value = 3200          ' EDITABLE
+    ws.Range("D" & fila).Value = 1800          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' ===== PERSONAL =====
+    ws.Range("A" & fila).Value = "PERSONAL"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    ws.Range("A" & fila & ":F" & fila).Merge
+    fila = fila + 1
+    
+    ' Operador especializado
+    ws.Range("B" & fila).Value = "Operador especializado"
+    ws.Range("C" & fila).Value = 24000         ' EDITABLE
+    ws.Range("D" & fila).Value = 0             ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' Supervisión
+    ws.Range("B" & fila).Value = "Supervisión"
+    ws.Range("C" & fila).Value = 8000          ' EDITABLE
+    ws.Range("D" & fila).Value = 4000          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' ===== OTROS =====
+    ws.Range("A" & fila).Value = "OTROS"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    ws.Range("A" & fila & ":F" & fila).Merge
+    fila = fila + 1
+    
+    ' Seguros
+    ws.Range("B" & fila).Value = "Seguros"
+    ws.Range("C" & fila).Value = 4200          ' EDITABLE
+    ws.Range("D" & fila).Value = 2800          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' Certificaciones
+    ws.Range("B" & fila).Value = "Certificaciones"
+    ws.Range("C" & fila).Value = 3500          ' EDITABLE
+    ws.Range("D" & fila).Value = 2100          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' Emisiones CO2
+    ws.Range("B" & fila).Value = "Emisiones CO2"
+    ws.Range("C" & fila).Value = 7995          ' EDITABLE
+    ws.Range("D" & fila).Value = 2165          ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' Gestión residuos
+    ws.Range("B" & fila).Value = "Gestión residuos"
+    ws.Range("C" & fila).Value = 1500          ' EDITABLE
+    ws.Range("D" & fila).Value = 250           ' EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=IF(C" & fila & "<>0,E" & fila & "/C" & fila & ",0)"
+    fila = fila + 1
+    
+    ' ===== TOTALES =====
+    fila = fila + 1
+    Dim filaTotal As Integer
+    filaTotal = fila
+    
     ws.Range("B" & filaTotal).Value = "TOTAL OPEX"
+    ws.Range("B" & filaTotal).Font.Bold = True
+    ws.Range("B" & filaTotal).Font.Size = 14
     
-    ' Fórmulas inteligentes que suman solo celdas numéricas
-    ws.Range("C" & filaTotal).Formula = "=SUMIF(C:C,"">0"",C:C)-SUMIF(A:A,""ENERGÍA"",C:C)-SUMIF(A:A,""MANTENIMIENTO"",C:C)"
-    ws.Range("D" & filaTotal).Formula = "=SUMIF(D:D,"">0"",D:D)-SUMIF(A:A,""ENERGÍA"",D:D)-SUMIF(A:A,""MANTENIMIENTO"",D:D)"
+    ' Fórmulas de totalización que excluyen encabezados de categorías
+    ws.Range("C" & filaTotal).Formula = "=SUMPRODUCT((A6:A" & (filaTotal - 1) & "<>""ENERGÍA"")*(A6:A" & (filaTotal - 1) & "<>""MANTENIMIENTO"")*(A6:A" & (filaTotal - 1) & "<>""SERVICIOS"")*(A6:A" & (filaTotal - 1) & "<>""PERSONAL"")*(A6:A" & (filaTotal - 1) & "<>""OTROS"")*C6:C" & (filaTotal - 1) & ")"
+    
+    ws.Range("D" & filaTotal).Formula = "=SUMPRODUCT((A6:A" & (filaTotal - 1) & "<>""ENERGÍA"")*(A6:A" & (filaTotal - 1) & "<>""MANTENIMIENTO"")*(A6:A" & (filaTotal - 1) & "<>""SERVICIOS"")*(A6:A" & (filaTotal - 1) & "<>""PERSONAL"")*(A6:A" & (filaTotal - 1) & "<>""OTROS"")*D6:D" & (filaTotal - 1) & ")"
+    
     ws.Range("E" & filaTotal).Formula = "=C" & filaTotal & "-D" & filaTotal
-    ws.Range("F" & filaTotal).Formula = "=E" & filaTotal & "/C" & filaTotal
+    ws.Range("F" & filaTotal).Formula = "=IF(C" & filaTotal & "<>0,E" & filaTotal & "/C" & filaTotal & ",0)"
     
     ' Formato especial para totales
     ws.Range("B" & filaTotal & ":F" & filaTotal).Font.Bold = True
     ws.Range("B" & filaTotal & ":F" & filaTotal).Font.Size = 14
     ws.Range("B" & filaTotal & ":F" & filaTotal).Interior.Color = RGB(173, 216, 230)
+    ws.Range("B" & filaTotal & ":F" & filaTotal).Borders.LineStyle = xlContinuous
+    ws.Range("B" & filaTotal & ":F" & filaTotal).Borders.Weight = xlThick
     
-    ' CRUCIAL: Crear nombre de rango para el ahorro anual
+    ' CREAR NOMBRES DE RANGO PARA REFERENCIAS EXTERNAS
     ws.Range("E" & filaTotal).Name = "OPEX_AhorroAnual"
+    ws.Range("C" & filaTotal).Name = "OPEX_SistemaVapor"
+    ws.Range("D" & filaTotal).Name = "OPEX_BombaCalor"
+    ws.Range("F" & filaTotal).Name = "OPEX_PorcentajeReduccion"
     
-    ' Aplicar formato de porcentaje a columna F
-    ws.Range("F4:F" & filaTotal).NumberFormat = "0.0%"
-    
-    ws.Range("ZZ2").Value = filaTotal  ' Guardar para referencias
+    ' Guardar fila de totales para referencias
+    ws.Range("ZZ2").Value = filaTotal
 End Sub
 
+Private Sub AplicarFormatosOPEX(ws As Worksheet)
+    Dim ultimaFila As Integer
+    ultimaFila = ws.Range("ZZ2").Value
+    
+    ' === MARCAR CELDAS EDITABLES ===
+    ' Todas las celdas de valores (columnas C y D) excepto las calculadas
+    Dim rangoEditable As Range
+    Set rangoEditable = ws.Range("C6:D" & (ultimaFila - 1))
+    
+    ' Excluir la fila de costo energía que es calculada
+    Dim filaEnergiaCosto As Integer
+    filaEnergiaCosto = 7  ' Segunda fila de energía (costo calculado)
+    
+    ' Marcar editables con color amarillo claro
+    rangoEditable.Interior.Color = RGB(255, 255, 224)
+    rangoEditable.Borders.LineStyle = xlContinuous
+    rangoEditable.Borders.Weight = xlMedium
+    rangoEditable.Borders.Color = RGB(255, 165, 0)
+    
+    ' Marcar fila de costo energía como calculada (azul muy claro)
+    ws.Range("C" & filaEnergiaCosto & ":D" & filaEnergiaCosto).Interior.Color = RGB(230, 240, 255)
+    
+    ' === FORMATOS NUMÉRICOS ===
+    ' Formato de moneda para valores monetarios
+    ws.Range("C5:E" & ultimaFila).NumberFormat = "$#,##0"
+    
+    ' Formato de porcentaje para columna F
+    ws.Range("F5:F" & ultimaFila).NumberFormat = "0.0%"
+    
+    ' === BORDES Y LÍNEAS ===
+    ' Bordes para toda la tabla
+    ws.Range("A4:F" & ultimaFila).Borders.LineStyle = xlContinuous
+    
+    ' Bordes más gruesos para encabezados de categorías
+    Dim filaCategoria As Integer
+    For filaCategoria = 5 To ultimaFila
+        If ws.Range("A" & filaCategoria).Font.Bold And _
+           ws.Range("A" & filaCategoria).Interior.Color = RGB(255, 160, 122) Then
+            ws.Range("A" & filaCategoria & ":F" & filaCategoria).Borders.Weight = xlThick
+        End If
+    Next filaCategoria
+    
+    ' === FORMATO CONDICIONAL PARA AHORROS ===
+    ' Verde para ahorros positivos
+    Dim rangoAhorros As Range
+    Set rangoAhorros = ws.Range("E6:E" & (ultimaFila - 1))
+    
+    rangoAhorros.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, Formula1:="0"
+    rangoAhorros.FormatConditions(1).Interior.Color = RGB(144, 238, 144)
+    rangoAhorros.FormatConditions(1).Font.Bold = True
+    
+    ' Rosa claro para valores negativos (costos adicionales)
+    rangoAhorros.FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, Formula1:="0"
+    rangoAhorros.FormatConditions(2).Interior.Color = RGB(255, 182, 193)
+    rangoAhorros.FormatConditions(2).Font.Bold = True
+    
+    ' === FORMATO CONDICIONAL PARA PORCENTAJES ===
+    Dim rangoPorcentajes As Range
+    Set rangoPorcentajes = ws.Range("F6:F" & (ultimaFila - 1))
+    
+    ' Verde intenso para reducciones >50%
+    rangoPorcentajes.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, Formula1:="0.5"
+    rangoPorcentajes.FormatConditions(1).Interior.Color = RGB(0, 150, 0)
+    rangoPorcentajes.FormatConditions(1).Font.Color = RGB(255, 255, 255)
+    rangoPorcentajes.FormatConditions(1).Font.Bold = True
+    
+    ' Verde claro para reducciones 20-50%
+    rangoPorcentajes.FormatConditions.Add Type:=xlCellValue, Operator:=xlBetween, Formula1:="0.2", Formula2:="0.5"
+    rangePorcentajes.FormatConditions(2).Interior.Color = RGB(144, 238, 144)
+    
+    ' === ALTERNANCIA DE COLORES DE FILA ===
+    Dim fila As Integer
+    For fila = 6 To ultimaFila - 1 Step 2
+        If Not ws.Range("A" & fila).Font.Bold Then
+            ws.Range("A" & fila & ":F" & fila).Interior.Color = RGB(248, 248, 248)
+        End If
+    Next fila
+End Sub
 
+Private Sub CrearMetricasAdicionales(ws As Worksheet)
+    Dim ultimaFila As Integer
+    ultimaFila = ws.Range("ZZ2").Value
+    Dim filaMetricas As Integer
+    filaMetricas = ultimaFila + 3
+    
+    ' === MÉTRICAS ADICIONALES ===
+    With ws
+        .Range("A" & filaMetricas).Value = "MÉTRICAS ADICIONALES"
+        .Range("A" & filaMetricas).Font.Bold = True
+        .Range("A" & filaMetricas).Font.Size = 14
+        .Range("A" & filaMetricas).Interior.Color = RGB(173, 216, 230)
+        
+        ' Ahorro mensual
+        .Range("A" & (filaMetricas + 1)).Value = "Ahorro mensual:"
+        .Range("B" & (filaMetricas + 1)).Formula = "=OPEX_AhorroAnual/12"
+        .Range("B" & (filaMetricas + 1)).NumberFormat = "$#,##0"
+        
+        ' Ahorro por hora de operación
+        .Range("A" & (filaMetricas + 2)).Value = "Ahorro por hora operación:"
+        .Range("B" & (filaMetricas + 2)).Formula = "=OPEX_AhorroAnual/8760"
+        .Range("B" & (filaMetricas + 2)).NumberFormat = "$#,##0.00"
+        
+        ' Eficiencia energética (MWh ahorrados)
+        .Range("A" & (filaMetricas + 3)).Value = "Energía ahorrada (MWh/año):"
+        .Range("B" & (filaMetricas + 3)).Formula = "=C6-D6"  ' Consumo energético
+        .Range("B" & (filaMetricas + 3)).NumberFormat = "#,##0"
+        
+        ' Equivalencia en hogares
+        .Range("A" & (filaMetricas + 4)).Value = "Equivalente hogares abastecidos:"
+        .Range("B" & (filaMetricas + 4)).Formula = "=(C6-D6)/3.5"  ' 3.5 MWh promedio por hogar
+        .Range("B" & (filaMetricas + 4)).NumberFormat = "#,##0"
+        
+        ' Aplicar formato a métricas
+        .Range("A" & (filaMetricas + 1) & ":B" & (filaMetricas + 4)).Borders.LineStyle = xlContinuous
+        .Range("A" & (filaMetricas + 1) & ":A" & (filaMetricas + 4)).Font.Bold = True
+    End With
+End Sub
+
+' === FUNCIONES DE VALIDACIÓN ===
+Sub ValidarDatosOPEX()
+    ' Función para validar que los datos ingresados sean coherentes
+    Dim ws As Worksheet
+    Set ws = Worksheets("OPEX")
+    
+    Dim errores As String
+    errores = ""
+    
+    ' Validar que sistema vapor >= bomba calor en la mayoría de casos
+    Dim fila As Integer
+    For fila = 6 To ws.Range("ZZ2").Value - 1
+        If ws.Range("C" & fila).Value <> "" And ws.Range("D" & fila).Value <> "" Then
+            If IsNumeric(ws.Range("C" & fila).Value) And IsNumeric(ws.Range("D" & fila).Value) Then
+                If ws.Range("C" & fila).Value < ws.Range("D" & fila).Value Then
+                    errores = errores & "• " & ws.Range("B" & fila).Value & ": Sistema vapor menor que bomba calor" & vbCrLf
+                End If
+            End If
+        End If
+    Next fila
+    
+    If errores <> "" Then
+        MsgBox "Advertencias encontradas en datos OPEX:" & vbCrLf & errores, vbExclamation
+    Else
+        MsgBox "Datos OPEX validados correctamente. Todos los valores son coherentes.", vbInformation
+    End If
+End Sub
+
+Sub ExportarOPEXaCSV()
+    ' Función para exportar datos OPEX a CSV
+    Dim ws As Worksheet
+    Set ws = Worksheets("OPEX")
+    
+    Dim nombreArchivo As String
+    nombreArchivo = "OPEX_BAXTER_" & Format(Now, "yyyy-mm-dd") & ".csv"
+    
+    ' Exportar rango de datos
+    ws.Range("A4:F" & ws.Range("ZZ2").Value).Copy
+    
+    Dim nuevoLibro As Workbook
+    Set nuevoLibro = Workbooks.Add
+    nuevoLibro.Sheets(1).Range("A1").PasteSpecial xlPasteValues
+    
+    nuevoLibro.SaveAs ThisWorkbook.Path & "\" & nombreArchivo, xlCSV
+    nuevoLibro.Close False
+    
+    Application.CutCopyMode = False
+    
+    MsgBox "Datos OPEX exportados a: " & nombreArchivo, vbInformation
+End Sub
