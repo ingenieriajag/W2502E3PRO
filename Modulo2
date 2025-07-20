@@ -1,0 +1,51 @@
+' ===== MÓDULO 2: CONFIGURACIÓN CAPEX =====
+Sub ConfigurarHojaCAPEX()
+    Dim ws As Worksheet
+    Set ws = Worksheets("CAPEX")
+    ws.Activate
+    
+    ' Limpiar completamente la hoja para empezar fresh
+    ws.Cells.Clear
+    
+    ' Crear el encabezado principal con formato corporativo
+    With ws
+        .Range("A1").Value = "ANÁLISIS CAPEX - BOMBA CALOR TRANSCRÍTICA CO2"
+        .Range("A1:G1").Merge
+        .Range("A1").Font.Size = 16
+        .Range("A1").Font.Bold = True
+        .Range("A1").Interior.Color = RGB(173, 216, 230) ' Azul claro corporativo
+        .Range("A1").HorizontalAlignment = xlCenter
+        
+        ' Crear encabezados de tabla (la estructura de datos)
+        .Range("A3").Value = "CATEGORÍA"
+        .Range("B3").Value = "CONCEPTO"
+        .Range("C3").Value = "CANTIDAD"         ' EDITABLE por usuario
+        .Range("D3").Value = "COSTO UNITARIO"  ' EDITABLE por usuario
+        .Range("E3").Value = "COSTO TOTAL"     ' CALCULADO automáticamente
+        .Range("F3").Value = "% TOTAL"         ' CALCULADO automáticamente
+        .Range("G3").Value = "OBSERVACIONES"
+        
+        ' Aplicar formato a encabezados
+        .Range("A3:G3").Font.Bold = True
+        .Range("A3:G3").Interior.Color = RGB(144, 238, 144) ' Verde claro
+        .Range("A3:G3").Borders.LineStyle = xlContinuous
+        
+        ' Optimizar anchos de columna para legibilidad
+        .Columns("A").ColumnWidth = 25
+        .Columns("B").ColumnWidth = 35
+        .Columns("C").ColumnWidth = 12
+        .Columns("D").ColumnWidth = 15
+        .Columns("E").ColumnWidth = 15
+        .Columns("F").ColumnWidth = 10
+        .Columns("G").ColumnWidth = 30
+    End With
+    
+    ' Llenar con todos los datos del estudio BAXTER
+    InsertarDatosCAPEX ws
+    
+    ' Crear área de resumen con totales y contingencias
+    ConfigurarResumenCAPEX ws
+    
+    ' Aplicar formato condicional para resaltar celdas editables
+    AplicarFormatosCAPEX ws
+End Sub
