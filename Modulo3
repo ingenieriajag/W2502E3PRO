@@ -1,0 +1,76 @@
+Private Sub InsertarDatosCAPEX(ws As Worksheet)
+    Dim fila As Integer
+    fila = 4  ' Empezamos después de los encabezados
+    
+    ' === EQUIPOS PRINCIPALES ===
+    ' Creamos una sección claramente identificada
+    ws.Range("A" & fila).Value = "EQUIPOS PRINCIPALES"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122) ' Naranja para categorías
+    fila = fila + 1
+    
+    ' Sistema principal (el corazón del proyecto)
+    ws.Range("B" & fila).Value = "Sistema bomba calor completo"
+    ws.Range("C" & fila).Value = 1                    ' Cantidad EDITABLE
+    ws.Range("D" & fila).Value = 285000              ' Costo EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila  ' AUTO-CALCULADO
+    ws.Range("G" & fila).Value = "Incluye todos los componentes transcríticos"
+    fila = fila + 1
+    
+    ' === INSTRUMENTACIÓN Y CONTROL ===
+    ws.Range("A" & fila).Value = "INSTRUMENTACIÓN Y CONTROL"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    ' Usamos un array para datos repetitivos (más eficiente)
+    Dim datosInstr As Variant
+    datosInstr = Array( _
+        Array("PLC Siemens S7-1500", 1, 45000, "Control principal farmacéutico"), _
+        Array("SCADA WinCC + 21 CFR Part 11", 1, 10000, "Interfaz cumplimiento FDA"), _
+        Array("Sensores temperatura RTD", 4, 1200, "Precisión ±0.1°C Clase A"), _
+        Array("Caudalímetros certificados", 2, 4000, "Electromagnéticos sanitarios"), _
+        Array("Transductores presión SIL2", 4, 2800, "Seguridad funcional CO2"), _
+        Array("Analizadores calidad agua", 2, 8500, "TOC y conductividad USP") _
+    )
+    
+    ' Insertar cada ítem de instrumentación
+    Dim i As Integer
+    For i = 0 To UBound(datosInstr)
+        ws.Range("B" & fila).Value = datosInstr(i)(0)
+        ws.Range("C" & fila).Value = datosInstr(i)(1)    ' EDITABLE
+        ws.Range("D" & fila).Value = datosInstr(i)(2)    ' EDITABLE
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosInstr(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' === SISTEMAS AUXILIARES ===
+    ws.Range("A" & fila).Value = "SISTEMAS AUXILIARES"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    Dim datosAux As Variant
+    datosAux = Array( _
+        Array("Tuberías AISI 316L (120 m)", 60, 100, "Sanitarias soldadas"), _
+        Array("Válvulas sanitarias tri-clamp", 3, 5800, "Accionamiento neumático"), _
+        Array("Conexiones ASME BPE", 1, 3000, "Certificadas cGMP"), _
+        Array("Aislamiento térmico", 200, 85, "Lana mineral + chaqueta inox") _
+    )
+    
+    For i = 0 To UBound(datosAux)
+        ws.Range("B" & fila).Value = datosAux(i)(0)
+        ws.Range("C" & fila).Value = datosAux(i)(1)    ' EDITABLE
+        ws.Range("D" & fila).Value = datosAux(i)(2)    ' EDITABLE
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosAux(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' Continúa con INGENIERÍA, INSTALACIÓN, y VALIDACIÓN siguiendo el mismo patrón...
+    ' [El código completo incluiría todas las secciones del documento BAXTER]
+    
+    ' Guardamos la última fila para usar en resumen
+    ws.Range("ZZ1").Value = fila - 1
+End Sub
