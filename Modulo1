@@ -77,14 +77,14 @@ End Sub
 
 Private Sub InicializarDatos()
     ' Configurar todas las hojas con sus datos
-    ConfigurarParametrosBase        ' Primero los parámetros base
+    ConfigurarParámetrosBase        ' Primero los parámetros base
     ConfigurarHojaCAPEX            ' Luego CAPEX
     ConfigurarHojaOPEX             ' Después OPEX
     ConfigurarHojaFlujoCaja        ' Flujo de caja usa datos de CAPEX y OPEX
-    ConfigurarAnalisisSensibilidad ' Finalmente sensibilidad
+    ConfigurarAnálisisSensibilidad ' Finalmente sensibilidad
 End Sub
 
-Private Sub ConfigurarParametrosBase()
+Private Sub ConfigurarParámetrosBase()
     ' Configurar hoja de parámetros base que alimenta todo el sistema
     Dim wsBase As Worksheet
     Set wsBase = Worksheets("Datos_Base")
