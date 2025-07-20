@@ -1,0 +1,179 @@
+' ===== MÓDULO 3: CONFIGURACIÓN OPEX =====
+Sub ConfigurarHojaOPEX()
+    Dim ws As Worksheet
+    Set ws = Worksheets("OPEX")
+    ws.Activate
+    
+    ws.Cells.Clear
+    
+    ' Crear encabezado comparativo (Vapor vs Bomba Calor)
+    With ws
+        .Range("A1").Value = "ANÁLISIS OPEX COMPARATIVO - VAPOR vs BOMBA CALOR CO2"
+        .Range("A1:F1").Merge
+        .Range("A1").Font.Size = 16
+        .Range("A1").Font.Bold = True
+        .Range("A1").Interior.Color = RGB(173, 216, 230)
+        .Range("A1").HorizontalAlignment = xlCenter
+        
+        ' Encabezados que muestran claramente la comparación
+        .Range("A3").Value = "CATEGORÍA"
+        .Range("B3").Value = "CONCEPTO"
+        .Range("C3").Value = "SISTEMA VAPOR"     ' EDITABLE - situación actual
+        .Range("D3").Value = "BOMBA CALOR"      ' EDITABLE - propuesta
+        .Range("E3").Value = "AHORRO"           ' CALCULADO automáticamente
+        .Range("F3").Value = "% REDUCCIÓN"     ' CALCULADO automáticamente
+        
+        .Range("A3:F3").Font.Bold = True
+        .Range("A3:F3").Interior.Color = RGB(144, 238, 144)
+        .Range("A3:F3").Borders.LineStyle = xlContinuous
+        
+        ' Anchos optimizados para la comparación
+        .Columns("A").ColumnWidth = 20
+        .Columns("B").ColumnWidth = 30
+        .Columns("C").ColumnWidth = 15
+        .Columns("D").ColumnWidth = 15
+        .Columns("E").ColumnWidth = 15
+        .Columns("F").ColumnWidth = 12
+    End With
+    
+    ' Primero configuramos los parámetros base editables
+    ConfigurarParametrosBase ws
+    
+    ' Luego insertamos todos los datos OPEX
+    InsertarDatosOPEX ws
+    
+    ' Aplicamos formatos para identificar celdas editables
+    AplicarFormatosOPEX ws
+End Sub
+
+
+Private Sub ConfigurarParametrosBase(ws As Worksheet)
+    Dim wsBase As Worksheet
+    Set wsBase = Worksheets("Datos_Base")
+    
+    ' Esta hoja será el "centro de control" de parámetros editables
+    With wsBase
+        .Cells.Clear
+        
+        .Range("A1").Value = "PARÁMETROS BASE EDITABLES - ANÁLISIS BAXTER"
+        .Range("A1:C1").Merge
+        .Range("A1").Font.Bold = True
+        .Range("A1").Font.Size = 14
+        .Range("A1").Interior.Color = RGB(173, 216, 230)
+        
+        ' Precios de energía (fundamentales para el análisis)
+        .Range("A3").Value = "Precio Gas Natural ($/kWh):"
+        .Range("B3").Value = 0.041    ' Del estudio BAXTER - EDITABLE
+        .Range("C3").Value = "Base datos UPME Colombia"
+        
+        .Range("A4").Value = "Precio Electricidad ($/kWh):"
+        .Range("B4").Value = 0.113    ' Del estudio BAXTER - EDITABLE
+        .Range("C4").Value = "Tarifa industrial promedio"
+        
+        ' Parámetros financieros
+        .Range("A5").Value = "Escalación Anual (%):"
+        .Range("B5").Value = 0.05     ' 5% anual - EDITABLE
+        .Range("C5").Value = "Inflación esperada energía"
+        
+        .Range("A6").Value = "Tasa Descuento (%):"
+        .Range("B6").Value = 0.08     ' 8% corporativa BAXTER - EDITABLE
+        .Range("C6").Value = "WACC corporativo BAXTER"
+        
+        .Range("A7").Value = "Valor Residual (% CAPEX):"
+        .Range("B7").Value = 0.15     ' 15% del CAPEX - EDITABLE
+        .Range("C7").Value = "Valor equipos a 15 años"
+        
+        ' Marcar las celdas editables visualmente
+        .Range("B3:B7").Interior.Color = RGB(255, 255, 224)  ' Amarillo claro
+        .Range("B3:B7").Borders.LineStyle = xlContinuous
+        
+        ' Aplicar formatos apropiados
+        .Range("B5:B7").NumberFormat = "0.0%"    ' Porcentajes
+        .Range("B3:B4").NumberFormat = "$0.000"  ' Precios con 3 decimales
+        
+        .Range("A3:C7").Borders.LineStyle = xlContinuous
+    End With
+End Sub
+Private Sub InsertarDatosOPEX(ws As Worksheet)
+    Dim fila As Integer
+    fila = 4
+    
+    ' === ENERGÍA (La categoría más importante) ===
+    ws.Range("A" & fila).Value = "ENERGÍA"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    ' Consumo energético base (datos del estudio BAXTER)
+    ws.Range("B" & fila).Value = "Consumo energético (MWh/año)"
+    ws.Range("C" & fila).Value = 1583    ' Vapor - EDITABLE
+    ws.Range("D" & fila).Value = 528     ' Bomba Calor - EDITABLE
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila      ' Ahorro automático
+    ws.Range("F" & fila).Formula = "=E" & fila & "/C" & fila     ' % reducción automático
+    
+    ' Marcar como editables
+    ws.Range("C" & fila & ":D" & fila).Interior.Color = RGB(255, 255, 224)
+    fila = fila + 1
+    
+    ' Costo energía (CALCULADO desde parámetros base)
+    ws.Range("B" & fila).Value = "Costo energía"
+    ' FÓRMULAS INTELIGENTES que toman precios de Datos_Base
+    ws.Range("C" & fila).Formula = "=C" & (fila - 1) & "*Datos_Base!$B$3"    ' Consumo vapor * precio gas
+    ws.Range("D" & fila).Formula = "=D" & (fila - 1) & "*Datos_Base!$B$4"    ' Consumo eléctrico * precio electricidad
+    ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+    ws.Range("F" & fila).Formula = "=E" & fila & "/C" & fila
+    fila = fila + 1
+    
+    ' === MANTENIMIENTO ===
+    ws.Range("A" & fila).Value = "MANTENIMIENTO"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    ' Datos de mantenimiento del estudio BAXTER
+    Dim datosMant As Variant
+    datosMant = Array( _
+        Array("Preventivo", 18000, 8500), _
+        Array("Correctivo", 12000, 4200), _
+        Array("Inspecciones", 8500, 3200) _
+    )
+    
+    Dim i As Integer
+    For i = 0 To UBound(datosMant)
+        ws.Range("B" & fila).Value = datosMant(i)(0)
+        ws.Range("C" & fila).Value = datosMant(i)(1)    ' EDITABLE
+        ws.Range("D" & fila).Value = datosMant(i)(2)    ' EDITABLE
+        ws.Range("E" & fila).Formula = "=C" & fila & "-D" & fila
+        ws.Range("F" & fila).Formula = "=E" & fila & "/C" & fila
+        ws.Range("C" & fila & ":D" & fila).Interior.Color = RGB(255, 255, 224)
+        fila = fila + 1
+    Next i
+    
+    ' Continuar con SERVICIOS, PERSONAL, OTROS siguiendo el mismo patrón...
+    ' [Código completo incluiría todas las categorías del estudio BAXTER]
+    
+    ' === TOTALES DINÁMICOS ===
+    filaTotal = fila + 2
+    ws.Range("B" & filaTotal).Value = "TOTAL OPEX"
+    
+    ' Fórmulas inteligentes que suman solo celdas numéricas
+    ws.Range("C" & filaTotal).Formula = "=SUMIF(C:C,"">0"",C:C)-SUMIF(A:A,""ENERGÍA"",C:C)-SUMIF(A:A,""MANTENIMIENTO"",C:C)"
+    ws.Range("D" & filaTotal).Formula = "=SUMIF(D:D,"">0"",D:D)-SUMIF(A:A,""ENERGÍA"",D:D)-SUMIF(A:A,""MANTENIMIENTO"",D:D)"
+    ws.Range("E" & filaTotal).Formula = "=C" & filaTotal & "-D" & filaTotal
+    ws.Range("F" & filaTotal).Formula = "=E" & filaTotal & "/C" & filaTotal
+    
+    ' Formato especial para totales
+    ws.Range("B" & filaTotal & ":F" & filaTotal).Font.Bold = True
+    ws.Range("B" & filaTotal & ":F" & filaTotal).Font.Size = 14
+    ws.Range("B" & filaTotal & ":F" & filaTotal).Interior.Color = RGB(173, 216, 230)
+    
+    ' CRUCIAL: Crear nombre de rango para el ahorro anual
+    ws.Range("E" & filaTotal).Name = "OPEX_AhorroAnual"
+    
+    ' Aplicar formato de porcentaje a columna F
+    ws.Range("F4:F" & filaTotal).NumberFormat = "0.0%"
+    
+    ws.Range("ZZ2").Value = filaTotal  ' Guardar para referencias
+End Sub
+
+
