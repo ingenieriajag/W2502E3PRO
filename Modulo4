@@ -1,0 +1,155 @@
+' ===== MÓDULO 4: FLUJO DE CAJA DINÁMICO =====
+Sub ConfigurarHojaFlujoCaja()
+    Dim ws As Worksheet
+    Set ws = Worksheets("Flujo_Caja")
+    ws.Activate
+    
+    ws.Cells.Clear
+    
+    ' Encabezado del análisis financiero
+    With ws
+        .Range("A1").Value = "ANÁLISIS FLUJO DE CAJA - 15 AÑOS | PROYECTO BAXTER CO2"
+        .Range("A1:H1").Merge
+        .Range("A1").Font.Size = 16
+        .Range("A1").Font.Bold = True
+        .Range("A1").Interior.Color = RGB(173, 216, 230)
+        .Range("A1").HorizontalAlignment = xlCenter
+        
+        ' Encabezados que explican cada componente del análisis
+        .Range("A3").Value = "AÑO"
+        .Range("B3").Value = "INVERSIÓN"          ' Negativo año 0, positivo año 15 (residual)
+        .Range("C3").Value = "AHORRO"             ' Escalado anualmente
+        .Range("D3").Value = "FLUJO NETO"         ' Inversión + Ahorro
+        .Range("E3").Value = "FACTOR DESC 8%"     ' Valor presente
+        .Range("F3").Value = "VPN AÑO"           ' Flujo descontado
+        .Range("G3").Value = "VPN ACUMULADO"     ' Suma acumulativa
+        .Range("H3").Value = "PAYBACK"           ' Indicador recuperación
+        
+        .Range("A3:H3").Font.Bold = True
+        .Range("A3:H3").Interior.Color = RGB(144, 238, 144)
+        .Range("A3:H3").Borders.LineStyle = xlContinuous
+        
+        ' Anchos optimizados para números financieros
+        .Columns("A").ColumnWidth = 8
+        .Columns("B:H").ColumnWidth = 15
+    End With
+    
+    ' Generar 16 años de flujo de caja (0 a 15)
+    GenerarFlujoCaja ws
+    
+    ' Calcular métricas financieras clave
+    CalcularMetricas ws
+    
+    ' Aplicar formatos de moneda y porcentajes
+    FormatearFlujoCaja ws
+End Sub
+
+Private Sub GenerarFlujoCaja(ws As Worksheet)
+    Dim fila As Integer
+    
+    ' === AÑO 0 - INVERSIÓN INICIAL ===
+    fila = 4
+    ws.Range("A" & fila).Value = 0
+    ws.Range("B" & fila).Formula = "=-CAPEX_Total"        ' Inversión como flujo negativo
+    ws.Range("C" & fila).Value = 0                        ' No hay ahorros aún
+    ws.Range("D" & fila).Formula = "=B" & fila & "+C" & fila
+    ws.Range("E" & fila).Value = 1                        ' Factor descuento año 0 = 1
+    ws.Range("F" & fila).Formula = "=D" & fila & "*E" & fila
+    ws.Range("G" & fila).Formula = "=F" & fila            ' VPN acumulado inicial
+    ws.Range("H" & fila).Formula = "=IF(G" & fila & ">0,""Recuperado"",""Pendiente"")"
+    
+    ' === AÑOS 1-14 - OPERACIÓN NORMAL ===
+    Dim i As Integer
+    For i = 1 To 14
+        fila = fila + 1
+        ws.Range("A" & fila).Value = i
+        ws.Range("B" & fila).Value = 0                    ' No hay más inversiones
+        
+        ' Ahorro escalado con inflación año tras año
+        ws.Range("C" & fila).Formula = "=OPEX_AhorroAnual*(1+Datos_Base!$B$5)^" & i
+        
+        ws.Range("D" & fila).Formula = "=B" & fila & "+C" & fila
+        
+        ' Factor de descuento: 1/(1+r)^n
+        ws.Range("E" & fila).Formula = "=1/((1+Datos_Base!$B$6)^" & i & ")"
+        
+        ws.Range("F" & fila).Formula = "=D" & fila & "*E" & fila
+        ws.Range("G" & fila).Formula = "=G" & (fila - 1) & "+F" & fila     ' Acumulativo
+        ws.Range("H" & fila).Formula = "=IF(G" & fila & ">0,A" & fila & ",""Pendiente"")"
+    Next i
+    
+    ' === AÑO 15 - CON VALOR RESIDUAL ===
+    fila = fila + 1
+    ws.Range("A" & fila).Value = 15
+    
+    ' Valor residual como flujo positivo
+    ws.Range("B" & fila).Formula = "=CAPEX_Total*Datos_Base!$B$7"
+    
+    ' Ahorro del año 15
+    ws.Range("C" & fila).Formula = "=OPEX_AhorroAnual*(1+Datos_Base!$B$5)^15"
+    
+    ws.Range("D" & fila).Formula = "=B" & fila & "+C" & fila
+    ws.Range("E" & fila).Formula = "=1/((1+Datos_Base!$B$6)^15)"
+    ws.Range("F" & fila).Formula = "=D" & fila & "*E" & fila
+    ws.Range("G" & fila).Formula = "=G" & (fila - 1) & "+F" & fila
+    ws.Range("H" & fila).Formula = "=IF(G" & fila & ">0,A" & fila & ",""Pendiente"")"
+    
+    ' Guardar última fila para cálculos posteriores
+    ws.Range("ZZ3").Value = fila
+End Sub
+Private Sub CalcularMetricas(ws As Worksheet)
+    Dim ultimaFila As Integer
+    ultimaFila = ws.Range("ZZ3").Value
+    Dim filaMetricas As Integer
+    filaMetricas = ultimaFila + 3
+    
+    ' === MÉTRICAS FINANCIERAS CLAVE ===
+    With ws
+        ' VPN TOTAL (el más importante)
+        .Range("E" & filaMetricas).Value = "VPN TOTAL:"
+        .Range("F" & filaMetricas).Formula = "=G" & ultimaFila
+        .Range("E" & filaMetricas & ":F" & filaMetricas).Font.Bold = True
+        .Range("E" & filaMetricas & ":F" & filaMetricas).Interior.Color = RGB(144, 238, 144)
+        
+        ' TIR (Tasa Interna de Retorno) - usa función Excel IRR
+        .Range("E" & (filaMetricas + 1)).Value = "TIR:"
+        .Range("F" & (filaMetricas + 1)).Formula = "=IRR(D4:D" & ultimaFila & ")"
+        .Range("F" & (filaMetricas + 1)).NumberFormat = "0.0%"
+        
+        ' PAYBACK (busca el primer año con VPN positivo)
+        .Range("E" & (filaMetricas + 2)).Value = "PAYBACK:"
+        .Range("F" & (filaMetricas + 2)).Formula = "=INDEX(H4:H" & ultimaFila & ",MATCH(TRUE,G4:G" & ultimaFila & ">0,0))"
+        
+        ' ÍNDICE DE RENTABILIDAD
+        .Range("E" & (filaMetricas + 3)).Value = "ÍNDICE RENTABILIDAD:"
+        .Range("F" & (filaMetricas + 3)).Formula = "=(F" & filaMetricas & "+CAPEX_Total)/CAPEX_Total"
+        .Range("F" & (filaMetricas + 3)).NumberFormat = "0.00"
+        
+        ' CREAR NOMBRES DE RANGO para el Dashboard
+        .Range("F" & filaMetricas).Name = "VPN_Total"
+        .Range("F" & (filaMetricas + 1)).Name = "TIR_Proyecto"
+        .Range("F" & (filaMetricas + 2)).Name = "Payback_Años"
+        .Range("F" & (filaMetricas + 3)).Name = "Indice_Rentabilidad"
+    End With
+End Sub
+
+Private Sub FormatearFlujoCaja(ws As Worksheet)
+    Dim ultimaFila As Integer
+    ultimaFila = ws.Range("ZZ3").Value
+    
+    ' Aplicar formatos de moneda a columnas apropiadas
+    ws.Range("B4:G" & ultimaFila).NumberFormat = "$#,##0"
+    
+    ' Formato condicional para VPN acumulado
+    ' Verde cuando es positivo, rojo cuando es negativo
+    Dim rango As Range
+    Set rango = ws.Range("G4:G" & ultimaFila)
+    
+    ' Formato condicional para valores positivos (verde)
+    rango.FormatConditions.Add Type:=xlCellValue, Operator:=xlGreater, Formula1:="0"
+    rango.FormatConditions(1).Interior.Color = RGB(144, 238, 144)
+    
+    ' Formato condicional para valores negativos (rosa claro)
+    rango.FormatConditions.Add Type:=xlCellValue, Operator:=xlLess, Formula1:="0"
+    rango.FormatConditions(2).Interior.Color = RGB(255, 182, 193)
+End Sub
