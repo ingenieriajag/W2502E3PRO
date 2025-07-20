@@ -1,22 +1,20 @@
-' ===== MÓDULO 1: CONFIGURACIÓN INICIAL =====
+' ===== MÓDULO 1: CONFIGURACIÓN INICIAL CORREGIDA =====
 Option Explicit
 
 Sub ConfigurarLibroCompleto()
-    ' Este procedimiento es como el "interruptor maestro" que construye todo el sistema
-    Application.ScreenUpdating = False  ' Acelera la ejecución ocultando los cambios
-    Application.DisplayAlerts = False   ' Evita ventanas de confirmación molestas
+    ' Procedimiento maestro que ejecuta toda la configuración
+    Application.ScreenUpdating = False
+    Application.DisplayAlerts = False
     
-    ' Llamamos a cada función de construcción en orden lógico
+    ' Ejecutar en orden lógico
     CrearHojasProyecto
     ConfigurarFormatosGlobales
     InicializarDatos
-    CrearDashboards
-    ConfigurarGraficos
+    CrearDashboardPrincipal
     
     ' Activar Dashboard como página principal
     Worksheets("Dashboard").Activate
     
-    ' Restaurar configuración normal de Excel
     Application.ScreenUpdating = True
     Application.DisplayAlerts = True
     
@@ -25,15 +23,23 @@ Sub ConfigurarLibroCompleto()
 End Sub
 
 Private Sub CrearHojasProyecto()
-    ' Primero eliminamos hojas existentes para empezar limpio
+    ' Eliminar hojas existentes excepto una para mantener referencia
     Dim ws As Worksheet
+    Dim hojaReferencia As String
+    
+    ' Identificar primera hoja disponible
+    If Worksheets.Count > 0 Then
+        hojaReferencia = Worksheets(1).Name
+    End If
+    
+    ' Eliminar todas las hojas excepto la primera
     For Each ws In Worksheets
-        If ws.Name <> "Hoja1" Then  ' Mantenemos una hoja como referencia
+        If ws.Name <> hojaReferencia Then
             ws.Delete
         End If
     Next ws
     
-    ' Crear todas las hojas que necesitamos en orden específico
+    ' Crear todas las hojas necesarias
     Dim nombresHojas As Variant
     nombresHojas = Array("Dashboard", "CAPEX", "OPEX", "Flujo_Caja", "Sensibilidad", "Datos_Base")
     
@@ -43,18 +49,128 @@ Private Sub CrearHojasProyecto()
         Worksheets(Worksheets.Count).Name = nombresHojas(i)
     Next i
     
-    ' Eliminar la hoja original que ya no necesitamos
+    ' Eliminar hoja de referencia original
     Application.DisplayAlerts = False
-    Worksheets("Hoja1").Delete
+    Worksheets(hojaReferencia).Delete
     Application.DisplayAlerts = True
 End Sub
 
 Private Sub ConfigurarFormatosGlobales()
-    ' Configuramos formatos que se aplicarán a todo el libro
+    ' Aplicar configuración estándar a todas las hojas
     Dim ws As Worksheet
     For Each ws In Worksheets
-        ws.Cells.Font.Name = "Calibri"
-        ws.Cells.Font.Size = 11
-        ws.StandardWidth = 12  ' Ancho estándar de columnas
+        With ws
+            .Cells.Font.Name = "Calibri"
+            .Cells.Font.Size = 11
+            .StandardWidth = 12
+            
+            ' Configurar impresión
+            .PageSetup.Orientation = xlLandscape
+            .PageSetup.FitToPagesWide = 1
+            .PageSetup.FitToPagesTall = False
+        End With
     Next ws
+End Sub
+
+Private Sub InicializarDatos()
+    ' Configurar todas las hojas con sus datos
+    ConfigurarParametrosBase        ' Primero los parámetros base
+    ConfigurarHojaCAPEX            ' Luego CAPEX
+    ConfigurarHojaOPEX             ' Después OPEX
+    ConfigurarHojaFlujoCaja        ' Flujo de caja usa datos de CAPEX y OPEX
+    ConfigurarAnalisisSensibilidad  ' Finalmente sensibilidad
+End Sub
+
+Private Sub ConfigurarParametrosBase()
+    ' Configurar hoja de parámetros base que alimenta todo el sistema
+    Dim wsBase As Worksheet
+    Set wsBase = Worksheets("Datos_Base")
+    
+    With wsBase
+        .Cells.Clear
+        
+        ' Título
+        .Range("A1").Value = "PARÁMETROS BASE EDITABLES - ANÁLISIS BAXTER"
+        .Range("A1:C1").Merge
+        .Range("A1").Font.Bold = True
+        .Range("A1").Font.Size = 14
+        .Range("A1").Interior.Color = RGB(173, 216, 230)
+        .Range("A1").HorizontalAlignment = xlCenter
+        
+        ' Parámetros energéticos
+        .Range("A3").Value = "Precio Gas Natural ($/kWh):"
+        .Range("B3").Value = 0.041
+        .Range("C3").Value = "Datos UPME Colombia"
+        
+        .Range("A4").Value = "Precio Electricidad ($/kWh):"
+        .Range("B4").Value = 0.113
+        .Range("C4").Value = "Tarifa industrial promedio"
+        
+        ' Parámetros financieros
+        .Range("A5").Value = "Escalación Anual (%):"
+        .Range("B5").Value = 0.05
+        .Range("C5").Value = "Inflación energía esperada"
+        
+        .Range("A6").Value = "Tasa Descuento (%):"
+        .Range("B6").Value = 0.08
+        .Range("C6").Value = "WACC corporativo BAXTER"
+        
+        .Range("A7").Value = "Valor Residual (% CAPEX):"
+        .Range("B7").Value = 0.15
+        .Range("C7").Value = "Valor equipos año 15"
+        
+        ' Parámetros técnicos
+        .Range("A9").Value = "PARÁMETROS TÉCNICOS:"
+        .Range("A9").Font.Bold = True
+        
+        .Range("A10").Value = "COP Sistema:"
+        .Range("B10").Value = 3
+        .Range("C10").Value = "Coeficiente rendimiento"
+        
+        .Range("A11").Value = "Horas Operación/Año:"
+        .Range("B11").Value = 8760
+        .Range("C11").Value = "Operación continua"
+        
+        ' Formato celdas editables
+        .Range("B3:B11").Interior.Color = RGB(255, 255, 224)
+        .Range("B3:B11").Borders.LineStyle = xlContinuous
+        
+        ' Formatos numéricos
+        .Range("B5:B7").NumberFormat = "0.0%"
+        .Range("B3:B4").NumberFormat = "$0.000"
+        .Range("B10:B11").NumberFormat = "0.0"
+        
+        ' Bordes para toda la tabla
+        .Range("A3:C11").Borders.LineStyle = xlContinuous
+    End With
+End Sub
+
+Private Sub CrearDashboardPrincipal()
+    ' Crear dashboard principal - función simplificada por ahora
+    Dim ws As Worksheet
+    Set ws = Worksheets("Dashboard")
+    
+    With ws
+        .Cells.Clear
+        
+        ' Título principal
+        .Range("A1").Value = "DASHBOARD EJECUTIVO - BOMBA CALOR TRANSCRÍTICA CO2"
+        .Range("A1:M1").Merge
+        .Range("A1").Font.Size = 20
+        .Range("A1").Font.Bold = True
+        .Range("A1").Interior.Color = RGB(173, 216, 230)
+        .Range("A1").HorizontalAlignment = xlCenter
+        
+        ' Subtítulo
+        .Range("A2").Value = "Proyecto BAXTER S.A. - Planta Cali, Colombia"
+        .Range("A2:M2").Merge
+        .Range("A2").Font.Size = 14
+        .Range("A2").Interior.Color = RGB(230, 230, 250)
+        .Range("A2").HorizontalAlignment = xlCenter
+        
+        ' Mensaje temporal
+        .Range("A4").Value = "Dashboard se configurará después de completar datos base..."
+        .Range("A4").Font.Size = 12
+        .Range("A4").Font.Italic = True
+    End With
 End Sub
