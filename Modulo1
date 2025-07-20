@@ -11,6 +11,9 @@ Sub ConfigurarLibroCompleto()
     ConfigurarFormatosGlobales
     InicializarDatos
     CrearDashboardPrincipal
+    CrearGraficosCAPEXvsOPEX
+    CrearGraficoFlujoCaja
+    AgregarNavegacionTodasHojas
     
     ' Activar Dashboard como página principal
     Worksheets("Dashboard").Activate
@@ -78,7 +81,7 @@ Private Sub InicializarDatos()
     ConfigurarHojaCAPEX            ' Luego CAPEX
     ConfigurarHojaOPEX             ' Después OPEX
     ConfigurarHojaFlujoCaja        ' Flujo de caja usa datos de CAPEX y OPEX
-    ConfigurarAnalisisSensibilidad  ' Finalmente sensibilidad
+    ConfigurarAnalisisSensibilidad ' Finalmente sensibilidad
 End Sub
 
 Private Sub ConfigurarParametrosBase()
@@ -146,14 +149,14 @@ Private Sub ConfigurarParametrosBase()
 End Sub
 
 Private Sub CrearDashboardPrincipal()
-    ' Crear dashboard principal - función simplificada por ahora
+    ' Dashboard ejecutivo completo con métricas clave e indicadores visuales
     Dim ws As Worksheet
     Set ws = Worksheets("Dashboard")
     
     With ws
         .Cells.Clear
         
-        ' Título principal
+        ' === ENCABEZADO CORPORATIVO ===
         .Range("A1").Value = "DASHBOARD EJECUTIVO - BOMBA CALOR TRANSCRÍTICA CO2"
         .Range("A1:M1").Merge
         .Range("A1").Font.Size = 20
@@ -161,16 +164,356 @@ Private Sub CrearDashboardPrincipal()
         .Range("A1").Interior.Color = RGB(173, 216, 230)
         .Range("A1").HorizontalAlignment = xlCenter
         
-        ' Subtítulo
         .Range("A2").Value = "Proyecto BAXTER S.A. - Planta Cali, Colombia"
         .Range("A2:M2").Merge
         .Range("A2").Font.Size = 14
         .Range("A2").Interior.Color = RGB(230, 230, 250)
         .Range("A2").HorizontalAlignment = xlCenter
         
-        ' Mensaje temporal
-        .Range("A4").Value = "Dashboard se configurará después de completar datos base..."
-        .Range("A4").Font.Size = 12
-        .Range("A4").Font.Italic = True
+        ' === MÉTRICAS FINANCIERAS CLAVE ===
+        .Range("A4").Value = "MÉTRICAS FINANCIERAS CLAVE"
+        .Range("A4:D4").Merge
+        .Range("A4").Font.Size = 16
+        .Range("A4").Font.Bold = True
+        .Range("A4").Interior.Color = RGB(144, 238, 144)
+        .Range("A4").HorizontalAlignment = xlCenter
+        
+        ' VPN Total
+        .Range("A6").Value = "VPN TOTAL (15 años):"
+        .Range("B6").Formula = "=VPN_Total"
+        .Range("B6").NumberFormat = "$#,##0"
+        .Range("A6").Font.Bold = True
+        .Range("B6").Font.Bold = True
+        .Range("B6").Font.Size = 14
+        
+        ' TIR
+        .Range("A7").Value = "TIR (Tasa Interna Retorno):"
+        .Range("B7").Formula = "=TIR_Proyecto"
+        .Range("B7").NumberFormat = "0.0%"
+        .Range("A7").Font.Bold = True
+        .Range("B7").Font.Bold = True
+        .Range("B7").Font.Size = 14
+        
+        ' Payback
+        .Range("A8").Value = "PERÍODO RECUPERACIÓN:"
+        .Range("B8").Formula = "=Payback_Años"
+        .Range("B8").NumberFormat = "0.0"" años"""
+        .Range("A8").Font.Bold = True
+        .Range("B8").Font.Bold = True
+        .Range("B8").Font.Size = 14
+        
+        ' Índice Rentabilidad
+        .Range("A9").Value = "ÍNDICE RENTABILIDAD:"
+        .Range("B9").Formula = "=Indice_Rentabilidad"
+        .Range("B9").NumberFormat = "0.00"
+        .Range("A9").Font.Bold = True
+        .Range("B9").Font.Bold = True
+        .Range("B9").Font.Size = 14
+        
+        ' === INDICADORES DE DECISIÓN (SEMÁFOROS) ===
+        .Range("E4").Value = "INDICADORES DE DECISIÓN"
+        .Range("E4:H4").Merge
+        .Range("E4").Font.Size = 16
+        .Range("E4").Font.Bold = True
+        .Range("E4").Interior.Color = RGB(255, 215, 0)
+        .Range("E4").HorizontalAlignment = xlCenter
+        
+        ' Semáforo VPN
+        .Range("E6").Value = "VPN > 0:"
+        .Range("F6").Formula = "=IF(VPN_Total>0,""✓ VIABLE"",""✗ NO VIABLE"")"
+        .Range("E6").Font.Bold = True
+        .Range("F6").Font.Bold = True
+        
+        ' Semáforo TIR
+        .Range("E7").Value = "TIR > 8% (WACC):"
+        .Range("F7").Formula = "=IF(TIR_Proyecto>0.08,""✓ SUPERA WACC"",""✗ BAJO WACC"")"
+        .Range("E7").Font.Bold = True
+        .Range("F7").Font.Bold = True
+        
+        ' Semáforo Payback
+        .Range("E8").Value = "Payback < 10 años:"
+        .Range("F8").Formula = "=IF(Payback_Años<10,""✓ ACEPTABLE"",""✗ MUY LARGO"")"
+        .Range("E8").Font.Bold = True
+        .Range("F8").Font.Bold = True
+        
+        ' === RESUMEN EJECUTIVO ===
+        .Range("A11").Value = "RESUMEN EJECUTIVO"
+        .Range("A11:M11").Merge
+        .Range("A11").Font.Size = 16
+        .Range("A11").Font.Bold = True
+        .Range("A11").Interior.Color = RGB(255, 182, 193)
+        .Range("A11").HorizontalAlignment = xlCenter
+        
+        ' Inversión CAPEX
+        .Range("A13").Value = "INVERSIÓN TOTAL (CAPEX):"
+        .Range("B13").Formula = "=CAPEX_Total"
+        .Range("B13").NumberFormat = "$#,##0"
+        .Range("A13").Font.Bold = True
+        .Range("B13").Font.Bold = True
+        
+        ' Ahorro Anual
+        .Range("A14").Value = "AHORRO ANUAL ESTIMADO:"
+        .Range("B14").Formula = "=Ahorro_Anual_OPEX"
+        .Range("B14").NumberFormat = "$#,##0"
+        .Range("A14").Font.Bold = True
+        .Range("B14").Font.Bold = True
+        
+        ' Ahorro Total 15 años
+        .Range("A15").Value = "AHORRO TOTAL 15 AÑOS:"
+        .Range("B15").Formula = "=Ahorro_Anual_OPEX*15*1.05^7.5"
+        .Range("B15").NumberFormat = "$#,##0"
+        .Range("A15").Font.Bold = True
+        .Range("B15").Font.Bold = True
+        
+        ' === NAVEGACIÓN ===
+        .Range("J6").Value = "IR A CAPEX >"
+        .Range("J7").Value = "IR A OPEX >"
+        .Range("J8").Value = "IR A FLUJO CAJA >"
+        .Range("J9").Value = "IR A SENSIBILIDAD >"
+        .Range("J6:J9").Font.Bold = True
+        .Range("J6:J9").Interior.Color = RGB(220, 220, 220)
+        .Range("J6:J9").HorizontalAlignment = xlCenter
+        
+        ' Configurar hipervínculos para navegación
+        .Hyperlinks.Add Anchor:=.Range("J6"), Address:="", SubAddress:="CAPEX!A1", TextToDisplay:="IR A CAPEX >"
+        .Hyperlinks.Add Anchor:=.Range("J7"), Address:="", SubAddress:="OPEX!A1", TextToDisplay:="IR A OPEX >"
+        .Hyperlinks.Add Anchor:=.Range("J8"), Address:="", SubAddress:="Flujo_Caja!A1", TextToDisplay:="IR A FLUJO CAJA >"
+        .Hyperlinks.Add Anchor:=.Range("J9"), Address:="", SubAddress:="Sensibilidad!A1", TextToDisplay:="IR A SENSIBILIDAD >"
+        
+        ' === FORMATOS CONDICIONALES PARA SEMÁFOROS ===
+        ' VPN Verde si positivo, Rojo si negativo
+        .Range("F6").FormatConditions.Add Type:=xlTextString, String:="✓", TextOperator:=xlContains
+        .Range("F6").FormatConditions(1).Interior.Color = RGB(144, 238, 144)
+        .Range("F6").FormatConditions.Add Type:=xlTextString, String:="✗", TextOperator:=xlContains
+        .Range("F6").FormatConditions(2).Interior.Color = RGB(255, 182, 193)
+        
+        ' TIR Verde si supera WACC, Rojo si no
+        .Range("F7").FormatConditions.Add Type:=xlTextString, String:="✓", TextOperator:=xlContains
+        .Range("F7").FormatConditions(1).Interior.Color = RGB(144, 238, 144)
+        .Range("F7").FormatConditions.Add Type:=xlTextString, String:="✗", TextOperator:=xlContains
+        .Range("F7").FormatConditions(2).Interior.Color = RGB(255, 182, 193)
+        
+        ' Payback Verde si aceptable, Rojo si muy largo
+        .Range("F8").FormatConditions.Add Type:=xlTextString, String:="✓", TextOperator:=xlContains
+        .Range("F8").FormatConditions(1).Interior.Color = RGB(144, 238, 144)
+        .Range("F8").FormatConditions.Add Type:=xlTextString, String:="✗", TextOperator:=xlContains
+        .Range("F8").FormatConditions(2).Interior.Color = RGB(255, 182, 193)
+        
+        ' Bordes para las secciones
+        .Range("A6:D9").Borders.LineStyle = xlContinuous
+        .Range("E6:H9").Borders.LineStyle = xlContinuous
+        .Range("A13:D15").Borders.LineStyle = xlContinuous
+        .Range("J6:J9").Borders.LineStyle = xlContinuous
+        
+        ' Ajustar anchos de columnas
+        .Columns("A:A").ColumnWidth = 25
+        .Columns("B:B").ColumnWidth = 18
+        .Columns("E:E").ColumnWidth = 20
+        .Columns("F:F").ColumnWidth = 18
+        .Columns("J:J").ColumnWidth = 18
     End With
+End Sub
+
+Private Sub CrearGraficosCAPEXvsOPEX()
+    ' Crear gráfico de barras comparativo CAPEX vs OPEX ahorrado en Dashboard
+    Dim ws As Worksheet
+    Set ws = Worksheets("Dashboard")
+    
+    ' Preparar datos para el gráfico
+    ws.Range("A18").Value = "COMPARACIÓN FINANCIERA"
+    ws.Range("A18:D18").Merge
+    ws.Range("A18").Font.Size = 14
+    ws.Range("A18").Font.Bold = True
+    ws.Range("A18").Interior.Color = RGB(255, 255, 0)
+    ws.Range("A18").HorizontalAlignment = xlCenter
+    
+    ' Datos para el gráfico
+    ws.Range("A20").Value = "Concepto"
+    ws.Range("B20").Value = "Monto (USD)"
+    ws.Range("A21").Value = "Inversión CAPEX"
+    ws.Range("B21").Formula = "=CAPEX_Total"
+    ws.Range("A22").Value = "Ahorro 15 años"
+    ws.Range("B22").Formula = "=Ahorro_Anual_OPEX*15*1.05^7.5"
+    ws.Range("A23").Value = "VPN Neto"
+    ws.Range("B23").Formula = "=VPN_Total"
+    
+    ' Formato para los datos
+    ws.Range("A20:B20").Font.Bold = True
+    ws.Range("A20:B23").Borders.LineStyle = xlContinuous
+    ws.Range("B21:B23").NumberFormat = "$#,##0"
+    
+    ' Crear gráfico de barras
+    Dim chartObj As Object
+    Set chartObj = ws.ChartObjects.Add(Left:=ws.Range("E18").Left, Top:=ws.Range("E18").Top, Width:=350, Height:=200)
+    
+    With chartObj.Chart
+        .SetSourceData ws.Range("A20:B23")
+        .ChartType = xlColumnClustered
+        .HasTitle = True
+        .ChartTitle.Text = "CAPEX vs Beneficios (15 años)"
+        .ChartTitle.Font.Size = 12
+        .ChartTitle.Font.Bold = True
+        
+        ' Configurar colores de las barras
+        .SeriesCollection(1).Points(1).Interior.Color = RGB(255, 99, 99)    ' CAPEX en rojo
+        .SeriesCollection(1).Points(2).Interior.Color = RGB(99, 255, 99)    ' Ahorros en verde
+        .SeriesCollection(1).Points(3).Interior.Color = RGB(99, 99, 255)    ' VPN en azul
+        
+        ' Configurar ejes
+        .Axes(xlCategory).TickLabels.Font.Size = 9
+        .Axes(xlValue).TickLabels.NumberFormat = "$#,##0"
+        .Axes(xlValue).TickLabels.Font.Size = 9
+        
+        ' Mostrar valores en las barras
+        .SeriesCollection(1).HasDataLabels = True
+        .SeriesCollection(1).DataLabels.NumberFormat = "$#,##0"
+        .SeriesCollection(1).DataLabels.Font.Size = 9
+        .SeriesCollection(1).DataLabels.Font.Bold = True
+        
+        ' Eliminar leyenda (no necesaria)
+        .HasLegend = False
+        
+        ' Configurar área del gráfico
+        .PlotArea.Interior.ColorIndex = xlNone
+        .ChartArea.Border.LineStyle = xlContinuous
+    End With
+End Sub
+
+Private Sub CrearGraficoFlujoCaja()
+    ' Crear gráfico de línea para flujo de caja acumulado en Dashboard
+    Dim ws As Worksheet
+    Set ws = Worksheets("Dashboard")
+    
+    ' Título para el segundo gráfico
+    ws.Range("A26").Value = "EVOLUCIÓN FLUJO DE CAJA (15 AÑOS)"
+    ws.Range("A26:D26").Merge
+    ws.Range("A26").Font.Size = 14
+    ws.Range("A26").Font.Bold = True
+    ws.Range("A26").Interior.Color = RGB(173, 216, 230)
+    ws.Range("A26").HorizontalAlignment = xlCenter
+    
+    ' Preparar datos resumidos para el gráfico (cada 3 años)
+    ws.Range("A28").Value = "Año"
+    ws.Range("B28").Value = "VPN Acumulado"
+    
+    ' Años clave para mostrar
+    ws.Range("A29").Value = 0
+    ws.Range("B29").Value = 0
+    ws.Range("A30").Value = 3
+    ws.Range("B30").Formula = "=INDEX(Flujo_Caja.G:G,7)"  ' Fila 7 = año 3
+    ws.Range("A31").Value = 6
+    ws.Range("B31").Formula = "=INDEX(Flujo_Caja.G:G,10)" ' Fila 10 = año 6
+    ws.Range("A32").Value = 9
+    ws.Range("B32").Formula = "=INDEX(Flujo_Caja.G:G,13)" ' Fila 13 = año 9
+    ws.Range("A33").Value = 12
+    ws.Range("B33").Formula = "=INDEX(Flujo_Caja.G:G,16)" ' Fila 16 = año 12
+    ws.Range("A34").Value = 15
+    ws.Range("B34").Formula = "=VPN_Total"
+    
+    ' Formato para los datos
+    ws.Range("A28:B28").Font.Bold = True
+    ws.Range("A28:B34").Borders.LineStyle = xlContinuous
+    ws.Range("B29:B34").NumberFormat = "$#,##0"
+    
+    ' Crear gráfico de línea
+    Dim chartObj2 As Object
+    Set chartObj2 = ws.ChartObjects.Add(Left:=ws.Range("E26").Left, Top:=ws.Range("E26").Top, Width:=350, Height:=200)
+    
+    With chartObj2.Chart
+        .SetSourceData ws.Range("A28:B34")
+        .ChartType = xlLineMarkers
+        .HasTitle = True
+        .ChartTitle.Text = "VPN Acumulado por Año"
+        .ChartTitle.Font.Size = 12
+        .ChartTitle.Font.Bold = True
+        
+        ' Configurar línea
+        .SeriesCollection(1).Border.Color = RGB(0, 100, 200)
+        .SeriesCollection(1).Border.Weight = 3
+        .SeriesCollection(1).MarkerStyle = xlMarkerStyleCircle
+        .SeriesCollection(1).MarkerSize = 8
+        .SeriesCollection(1).MarkerForegroundColor = RGB(255, 0, 0)
+        
+        ' Configurar ejes
+        .Axes(xlCategory).HasTitle = True
+        .Axes(xlCategory).AxisTitle.Text = "Años"
+        .Axes(xlCategory).AxisTitle.Font.Size = 10
+        .Axes(xlValue).HasTitle = True
+        .Axes(xlValue).AxisTitle.Text = "VPN Acumulado (USD)"
+        .Axes(xlValue).AxisTitle.Font.Size = 10
+        .Axes(xlValue).TickLabels.NumberFormat = "$#,##0"
+        
+        ' Mostrar valores en los puntos
+        .SeriesCollection(1).HasDataLabels = True
+        .SeriesCollection(1).DataLabels.NumberFormat = "$#,##0"
+        .SeriesCollection(1).DataLabels.Font.Size = 8
+        .SeriesCollection(1).DataLabels.Position = xlLabelPositionAbove
+        
+        ' Agregar línea horizontal en cero
+        .Axes(xlValue).HasMajorGridlines = True
+        .Axes(xlValue).MajorGridlines.Border.Color = RGB(200, 200, 200)
+        
+        ' Eliminar leyenda
+        .HasLegend = False
+        
+        ' Configurar área del gráfico
+        .PlotArea.Interior.ColorIndex = xlNone
+        .ChartArea.Border.LineStyle = xlContinuous
+    End With
+End Sub
+
+Private Sub AgregarNavegacionTodasHojas()
+    ' Agregar botones de navegación en todas las hojas excepto Dashboard
+    Dim hojas As Variant
+    hojas = Array("CAPEX", "OPEX", "Flujo_Caja", "Sensibilidad", "Datos_Base")
+    
+    Dim i As Integer
+    Dim ws As Worksheet
+    
+    For i = 0 To UBound(hojas)
+        Set ws = Worksheets(hojas(i))
+        
+        With ws
+            ' Botón regreso al Dashboard en esquina superior derecha
+            .Range("M1").Value = "⬅ DASHBOARD"
+            .Range("M1").Font.Bold = True
+            .Range("M1").Font.Size = 12
+            .Range("M1").Interior.Color = RGB(255, 215, 0)
+            .Range("M1").HorizontalAlignment = xlCenter
+            .Range("M1").Borders.LineStyle = xlContinuous
+            
+            ' Hipervínculo al Dashboard
+            .Hyperlinks.Add Anchor:=.Range("M1"), Address:="", SubAddress:="Dashboard!A1", TextToDisplay:="⬅ DASHBOARD"
+            
+            ' Navegación entre módulos en la fila 2
+            .Range("J2").Value = "CAPEX"
+            .Range("K2").Value = "OPEX"
+            .Range("L2").Value = "FLUJO"
+            .Range("M2").Value = "SENS."
+            
+            .Range("J2:M2").Font.Bold = True
+            .Range("J2:M2").Font.Size = 10
+            .Range("J2:M2").Interior.Color = RGB(230, 230, 230)
+            .Range("J2:M2").HorizontalAlignment = xlCenter
+            .Range("J2:M2").Borders.LineStyle = xlContinuous
+            
+            ' Hipervínculos entre módulos
+            .Hyperlinks.Add Anchor:=.Range("J2"), Address:="", SubAddress:="CAPEX!A1", TextToDisplay:="CAPEX"
+            .Hyperlinks.Add Anchor:=.Range("K2"), Address:="", SubAddress:="OPEX!A1", TextToDisplay:="OPEX"
+            .Hyperlinks.Add Anchor:=.Range("L2"), Address:="", SubAddress:="Flujo_Caja!A1", TextToDisplay:="FLUJO"
+            .Hyperlinks.Add Anchor:=.Range("M2"), Address:="", SubAddress:="Sensibilidad!A1", TextToDisplay:="SENS."
+            
+            ' Resaltar la hoja actual
+            Select Case hojas(i)
+                Case "CAPEX"
+                    .Range("J2").Interior.Color = RGB(144, 238, 144)
+                Case "OPEX"
+                    .Range("K2").Interior.Color = RGB(144, 238, 144)
+                Case "Flujo_Caja"
+                    .Range("L2").Interior.Color = RGB(144, 238, 144)
+                Case "Sensibilidad"
+                    .Range("M2").Interior.Color = RGB(144, 238, 144)
+            End Select
+        End With
+    Next i
 End Sub

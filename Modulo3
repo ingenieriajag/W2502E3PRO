@@ -309,7 +309,7 @@ Private Sub AplicarFormatosOPEX(ws As Worksheet)
     
     ' Verde claro para reducciones 20-50%
     rangoPorcentajes.FormatConditions.Add Type:=xlCellValue, Operator:=xlBetween, Formula1:="0.2", Formula2:="0.5"
-    rangePorcentajes.FormatConditions(2).Interior.Color = RGB(144, 238, 144)
+    rangoPorcentajes.FormatConditions(2).Interior.Color = RGB(144, 238, 144)
     
     ' === ALTERNANCIA DE COLORES DE FILA ===
     Dim fila As Integer

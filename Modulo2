@@ -1,4 +1,6 @@
 ' ===== MÓDULO 2: CONFIGURACIÓN CAPEX =====
+Option Explicit
+
 Sub ConfigurarHojaCAPEX()
     Dim ws As Worksheet
     Set ws = Worksheets("CAPEX")
@@ -41,7 +43,7 @@ Sub ConfigurarHojaCAPEX()
     End With
     
     ' Llenar con todos los datos del estudio BAXTER
-    InsertarDatosCAPEX ws
+    InsertarDatosCAPEXCompleto ws
     
     ' Crear área de resumen con totales y contingencias
     ConfigurarResumenCAPEX ws
@@ -169,11 +171,6 @@ Private Sub ConfigurarResumenCAPEX(ws As Worksheet)
             ws.Range("F" & fila).NumberFormat = "0.0%"
         End If
     Next fila
-End Sub
-' Modifica la función InicializarDatos en Módulo1
-Private Sub InicializarDatos()
-    ConfigurarHojaCAPEX
-    ' Aquí agregaremos las otras hojas después
 End Sub
 ' Agregar al final del Módulo 2:
 

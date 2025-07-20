@@ -1,4 +1,6 @@
 ' ===== MÓDULO 5: ANÁLISIS DE SENSIBILIDAD =====
+Option Explicit
+
 Sub ConfigurarAnalisisSensibilidad()
     Dim ws As Worksheet
     Set ws = Worksheets("Sensibilidad")
@@ -30,6 +32,7 @@ Sub ConfigurarAnalisisSensibilidad()
     End With
     
     CrearTablasSensibilidad ws
+    CrearGraficoTornado ws
 End Sub
 
 Private Sub CrearTablasSensibilidad(ws As Worksheet)
@@ -60,7 +63,7 @@ Private Sub CrearTablasSensibilidad(ws As Worksheet)
         ws.Range("E" & fila).Formula = "=TIR_Proyecto"
         ws.Range("F" & fila).Value = variables(i)(4)
         ws.Range("G" & fila).Value = variables(i)(5)
-        ws.Range("H" & fila).Formula = "=(VALUE(SUBSTITUTE(F" & fila & ",""%" & """,""""))-VALUE(SUBSTITUTE(G" & fila & ",""%" & ""","""")))/2" & "&""%"""
+        ws.Range("H" & fila).Formula = "=(VALUE(SUBSTITUTE(F" & fila & ",""%" & """,""""))-VALUE(SUBSTITUTE(G" & fila & ",""%" & ""","""")))/2"
         
         fila = fila + 1
     Next i
@@ -69,4 +72,103 @@ Private Sub CrearTablasSensibilidad(ws As Worksheet)
     ws.Range("C4:D7").NumberFormat = "0.0%"
     ws.Range("E4:H7").NumberFormat = "0.0%"
     ws.Range("C4:D7").Interior.Color = RGB(255, 255, 224)
+End Sub
+
+Private Sub CrearGraficoTornado(ws As Worksheet)
+    ' Crear gráfico de tornado para mostrar sensibilidad visual
+    
+    ' Título del gráfico
+    ws.Range("A10").Value = "GRÁFICO DE TORNADO - IMPACTO EN TIR"
+    ws.Range("A10:H10").Merge
+    ws.Range("A10").Font.Size = 14
+    ws.Range("A10").Font.Bold = True
+    ws.Range("A10").Interior.Color = RGB(255, 215, 0)
+    ws.Range("A10").HorizontalAlignment = xlCenter
+    
+    ' Preparar datos para el gráfico de tornado
+    ws.Range("A12").Value = "Variable"
+    ws.Range("B12").Value = "Impacto Negativo"
+    ws.Range("C12").Value = "Impacto Positivo"
+    
+    ' Datos basados en la sensibilidad calculada
+    ws.Range("A13").Value = "Precio Electricidad"
+    ws.Range("B13").Value = -5.7  ' Diferencia cuando baja el precio
+    ws.Range("C13").Value = 5.7   ' Diferencia cuando sube el precio
+    
+    ws.Range("A14").Value = "CAPEX Total"
+    ws.Range("B14").Value = -11.6  ' Diferencia cuando aumenta CAPEX
+    ws.Range("C14").Value = 11.6   ' Diferencia cuando disminuye CAPEX
+    
+    ws.Range("A15").Value = "Factor Utilización"
+    ws.Range("B15").Value = -3.9   ' Diferencia cuando baja utilización
+    ws.Range("C15").Value = 3.9    ' Diferencia cuando sube utilización
+    
+    ws.Range("A16").Value = "COP Sistema"
+    ws.Range("B16").Value = -6.9   ' Diferencia cuando baja COP
+    ws.Range("C16").Value = 6.9    ' Diferencia cuando sube COP
+    
+    ' Formato de tabla
+    ws.Range("A12:C12").Font.Bold = True
+    ws.Range("A12:C16").Borders.LineStyle = xlContinuous
+    ws.Range("B13:C16").NumberFormat = "0.0""pp"""
+    
+    ' Crear gráfico de barras horizontales (tornado)
+    Dim chartObj As Object
+    Set chartObj = ws.ChartObjects.Add(Left:=ws.Range("E12").Left, Top:=ws.Range("E12").Top, Width:=400, Height:=250)
+    
+    With chartObj.Chart
+        .SetSourceData ws.Range("A12:C16")
+        .ChartType = xlBarClustered
+        .HasTitle = True
+        .ChartTitle.Text = "Sensibilidad de TIR por Variable"
+        .ChartTitle.Font.Size = 12
+        .ChartTitle.Font.Bold = True
+        
+        ' Configurar colores de las barras
+        .SeriesCollection(1).Interior.Color = RGB(255, 99, 99)    ' Impacto negativo en rojo
+        .SeriesCollection(2).Interior.Color = RGB(99, 255, 99)    ' Impacto positivo en verde
+        
+        ' Configurar ejes
+        .Axes(xlCategory).ReversePlotOrder = True  ' Para efecto tornado
+        .Axes(xlValue).HasTitle = True
+        .Axes(xlValue).AxisTitle.Text = "Variación en TIR (puntos porcentuales)"
+        .Axes(xlValue).AxisTitle.Font.Size = 10
+        
+        ' Configurar leyenda
+        .HasLegend = True
+        .Legend.Position = xlLegendPositionBottom
+        .SeriesCollection(1).Name = "Impacto Negativo"
+        .SeriesCollection(2).Name = "Impacto Positivo"
+        
+        ' Mostrar valores en las barras
+        .SeriesCollection(1).HasDataLabels = True
+        .SeriesCollection(2).HasDataLabels = True
+        .SeriesCollection(1).DataLabels.NumberFormat = "0.0""pp"""
+        .SeriesCollection(2).DataLabels.NumberFormat = "0.0""pp"""
+        .SeriesCollection(1).DataLabels.Font.Size = 9
+        .SeriesCollection(2).DataLabels.Font.Size = 9
+        .SeriesCollection(1).DataLabels.Font.Bold = True
+        .SeriesCollection(2).DataLabels.Font.Bold = True
+        
+        ' Configurar área del gráfico
+        .PlotArea.Interior.ColorIndex = xlNone
+        .ChartArea.Border.LineStyle = xlContinuous
+        
+        ' Línea vertical en cero para referencia
+        .Axes(xlValue).HasMajorGridlines = True
+        .Axes(xlValue).MajorGridlines.Border.Color = RGB(100, 100, 100)
+    End With
+    
+    ' Agregar interpretación del gráfico
+    ws.Range("A19").Value = "INTERPRETACIÓN:"
+    ws.Range("A19").Font.Bold = True
+    ws.Range("A19").Font.Size = 12
+    
+    ws.Range("A20").Value = "• CAPEX Total es la variable MÁS CRÍTICA (±11.6pp impacto en TIR)"
+    ws.Range("A21").Value = "• COP Sistema tiene impacto moderado-alto (±6.9pp)"
+    ws.Range("A22").Value = "• Precio Electricidad tiene impacto moderado (±5.7pp)"
+    ws.Range("A23").Value = "• Factor Utilización tiene menor impacto (±3.9pp)"
+    
+    ws.Range("A20:A23").Font.Size = 10
+    ws.Range("A19:A23").WrapText = True
 End Sub

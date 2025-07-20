@@ -1,4 +1,6 @@
 ' ===== MÓDULO 4: FLUJO DE CAJA DINÁMICO =====
+Option Explicit
+
 Sub ConfigurarHojaFlujoCaja()
     Dim ws As Worksheet
     Set ws = Worksheets("Flujo_Caja")
