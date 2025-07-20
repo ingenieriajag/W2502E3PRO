@@ -1,7 +1,7 @@
 ' ===== MÓDULO 5: ANÁLISIS DE SENSIBILIDAD =====
 Option Explicit
 
-Sub ConfigurarAnálisisSensibilidad()
+Sub ConfigurarAnalisisSensibilidad()
     Dim ws As Worksheet
     Set ws = Worksheets("Sensibilidad")
     ws.Activate

@@ -120,11 +120,11 @@ Private Sub CalcularMetricas(ws As Worksheet)
         
         ' PAYBACK (busca el primer año con VPN positivo)
         .Range("E" & (filaMetricas + 2)).Value = "PAYBACK:"
-        .Range("F" & (filaMetricas + 2)).Formula = "=INDEX(H4:H" & ultimaFila & ",MATCH(TRUE,G4:G" & ultimaFila & ">0,0))"
+        .Range("F" & (filaMetricas + 2)).Formula = "=INDEX(A4:A" & ultimaFila & ",MATCH(TRUE,G4:G" & ultimaFila & ">0,0))"
         
-        ' ÍNDICE DE RENTABILIDAD
-        .Range("E" & (filaMetricas + 3)).Value = "ÍNDICE RENTABILIDAD:"
-        .Range("F" & (filaMetricas + 3)).Formula = "=(F" & filaMetricas & "+CAPEX_Total)/CAPEX_Total"
+        ' INDICE DE RENTABILIDAD
+        .Range("E" & (filaMetricas + 3)).Value = "INDICE RENTABILIDAD:"
+        .Range("F" & (filaMetricas + 3)).Formula = "=1+(F" & filaMetricas & "/CAPEX_Total)"
         .Range("F" & (filaMetricas + 3)).NumberFormat = "0.00"
         
         ' CREAR NOMBRES DE RANGO para el Dashboard

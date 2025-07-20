@@ -77,14 +77,14 @@ End Sub
 
 Private Sub InicializarDatos()
     ' Configurar todas las hojas con sus datos
-    ConfigurarParámetrosBase        ' Primero los parámetros base
+    ConfigurarParametrosBase        ' Primero los parametros base
     ConfigurarHojaCAPEX            ' Luego CAPEX
     ConfigurarHojaOPEX             ' Después OPEX
     ConfigurarHojaFlujoCaja        ' Flujo de caja usa datos de CAPEX y OPEX
-    ConfigurarAnálisisSensibilidad ' Finalmente sensibilidad
+    ConfigurarAnalisisSensibilidad ' Finalmente sensibilidad
 End Sub
 
-Private Sub ConfigurarParámetrosBase()
+Private Sub ConfigurarParametrosBase()
     ' Configurar hoja de parámetros base que alimenta todo el sistema
     Dim wsBase As Worksheet
     Set wsBase = Worksheets("Datos_Base")
@@ -100,7 +100,7 @@ Private Sub ConfigurarParámetrosBase()
         .Range("A1").Interior.Color = RGB(173, 216, 230)
         .Range("A1").HorizontalAlignment = xlCenter
         
-        ' Parámetros energéticos
+        ' Parametros energeticos
         .Range("A3").Value = "Precio Gas Natural ($/kWh):"
         .Range("B3").Value = 0.041
         .Range("C3").Value = "Datos UPME Colombia"
@@ -109,7 +109,7 @@ Private Sub ConfigurarParámetrosBase()
         .Range("B4").Value = 0.113
         .Range("C4").Value = "Tarifa industrial promedio"
         
-        ' Parámetros financieros
+        ' Parametros financieros
         .Range("A5").Value = "Escalación Anual (%):"
         .Range("B5").Value = 0.05
         .Range("C5").Value = "Inflación energía esperada"
@@ -122,8 +122,8 @@ Private Sub ConfigurarParámetrosBase()
         .Range("B7").Value = 0.15
         .Range("C7").Value = "Valor equipos año 15"
         
-        ' Parámetros técnicos
-        .Range("A9").Value = "PARÁMETROS TÉCNICOS:"
+        ' Parametros tecnicos
+        .Range("A9").Value = "PARAMETROS TECNICOS:"
         .Range("A9").Font.Bold = True
         
         .Range("A10").Value = "COP Sistema:"
@@ -253,14 +253,14 @@ Private Sub CrearDashboardPrincipal()
         
         ' Ahorro Anual
         .Range("A14").Value = "AHORRO ANUAL ESTIMADO:"
-        .Range("B14").Formula = "=Ahorro_Anual_OPEX"
+        .Range("B14").Formula = "=OPEX_AhorroAnual"
         .Range("B14").NumberFormat = "$#,##0"
         .Range("A14").Font.Bold = True
         .Range("B14").Font.Bold = True
         
         ' Ahorro Total 15 años
         .Range("A15").Value = "AHORRO TOTAL 15 AÑOS:"
-        .Range("B15").Formula = "=Ahorro_Anual_OPEX*15*1.05^7.5"
+        .Range("B15").Formula = "=OPEX_AhorroAnual*15*1.05^7.5"
         .Range("B15").NumberFormat = "$#,##0"
         .Range("A15").Font.Bold = True
         .Range("B15").Font.Bold = True
@@ -333,7 +333,7 @@ Private Sub CrearGraficosCAPEXvsOPEX()
     ws.Range("A21").Value = "Inversión CAPEX"
     ws.Range("B21").Formula = "=CAPEX_Total"
     ws.Range("A22").Value = "Ahorro 15 años"
-    ws.Range("B22").Formula = "=Ahorro_Anual_OPEX*15*1.05^7.5"
+    ws.Range("B22").Formula = "=OPEX_AhorroAnual*15*1.05^7.5"
     ws.Range("A23").Value = "VPN Neto"
     ws.Range("B23").Formula = "=VPN_Total"
     
