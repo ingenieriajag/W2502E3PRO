@@ -5,3 +5,4 @@
 5.	Por favor, en cada paso del proceso, simplemente dame una explicación detallada de los cambios que realizaste.
 6.	Simplifica al máximo cada tarea y cambio de código que realices. Queremos evitar cambios masivos o complejos. Cada cambio debe afectar la menor cantidad de código posible. Todo se basa en la simplicidad.
 7.	Finalmente, agrega una sección de revisión al archivo todo.md con un resumen de los cambios que realizaste y cualquier otra información relevante.
+8.  Todos los documentos y codigos generados son en español teniendo en cuenta las tildes, las "ñ"
