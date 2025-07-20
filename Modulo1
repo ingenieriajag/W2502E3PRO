@@ -1,0 +1,60 @@
+' ===== MÓDULO 1: CONFIGURACIÓN INICIAL =====
+Option Explicit
+
+Sub ConfigurarLibroCompleto()
+    ' Este procedimiento es como el "interruptor maestro" que construye todo el sistema
+    Application.ScreenUpdating = False  ' Acelera la ejecución ocultando los cambios
+    Application.DisplayAlerts = False   ' Evita ventanas de confirmación molestas
+    
+    ' Llamamos a cada función de construcción en orden lógico
+    CrearHojasProyecto
+    ConfigurarFormatosGlobales
+    InicializarDatos
+    CrearDashboards
+    ConfigurarGraficos
+    
+    ' Activar Dashboard como página principal
+    Worksheets("Dashboard").Activate
+    
+    ' Restaurar configuración normal de Excel
+    Application.ScreenUpdating = True
+    Application.DisplayAlerts = True
+    
+    MsgBox "¡Sistema Excel BAXTER configurado exitosamente!" & vbCrLf & _
+           "Todas las hojas están listas y completamente interactivas.", vbInformation
+End Sub
+
+Private Sub CrearHojasProyecto()
+    ' Primero eliminamos hojas existentes para empezar limpio
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+        If ws.Name <> "Hoja1" Then  ' Mantenemos una hoja como referencia
+            ws.Delete
+        End If
+    Next ws
+    
+    ' Crear todas las hojas que necesitamos en orden específico
+    Dim nombresHojas As Variant
+    nombresHojas = Array("Dashboard", "CAPEX", "OPEX", "Flujo_Caja", "Sensibilidad", "Datos_Base")
+    
+    Dim i As Integer
+    For i = 0 To UBound(nombresHojas)
+        Worksheets.Add After:=Worksheets(Worksheets.Count)
+        Worksheets(Worksheets.Count).Name = nombresHojas(i)
+    Next i
+    
+    ' Eliminar la hoja original que ya no necesitamos
+    Application.DisplayAlerts = False
+    Worksheets("Hoja1").Delete
+    Application.DisplayAlerts = True
+End Sub
+
+Private Sub ConfigurarFormatosGlobales()
+    ' Configuramos formatos que se aplicarán a todo el libro
+    Dim ws As Worksheet
+    For Each ws In Worksheets
+        ws.Cells.Font.Name = "Calibri"
+        ws.Cells.Font.Size = 11
+        ws.StandardWidth = 12  ' Ancho estándar de columnas
+    Next ws
+End Sub
