@@ -175,5 +175,177 @@ Private Sub InicializarDatos()
     ConfigurarHojaCAPEX
     ' Aquí agregaremos las otras hojas después
 End Sub
+' Agregar al final del Módulo 2:
 
+Private Sub AplicarFormatosCAPEX(ws As Worksheet)
+    ' Aplicar formatos condicionales y estilos a CAPEX
+    Dim ultimaFila As Integer
+    ultimaFila = ws.Range("ZZ1").Value
+    
+    ' Formato condicional para celdas editables
+    Dim rangoEditable As Range
+    Set rangoEditable = ws.Range("C4:D" & ultimaFila)
+    
+    ' Bordes para celdas editables
+    rangoEditable.Borders.LineStyle = xlContinuous
+    rangoEditable.Borders.Weight = xlMedium
+    rangoEditable.Borders.Color = RGB(255, 165, 0) ' Naranja
+    
+    ' Formato numérico para costos
+    ws.Range("D4:E" & ultimaFila).NumberFormat = "$#,##0"
+    ws.Range("C4:C" & ultimaFila).NumberFormat = "0.0"
+    
+    ' Aplicar bordes a toda la tabla
+    ws.Range("A3:G" & ultimaFila).Borders.LineStyle = xlContinuous
+    
+    ' Alternar colores de fila para mejor legibilidad
+    Dim fila As Integer
+    For fila = 4 To ultimaFila Step 2
+        If ws.Range("A" & fila).Value <> "" And _
+           Not ws.Range("A" & fila).Font.Bold Then
+            ws.Range("A" & fila & ":G" & fila).Interior.Color = RGB(248, 248, 248)
+        End If
+    Next fila
+End Sub
+
+' Función para completar TODOS los datos CAPEX del estudio BAXTER
+Private Sub InsertarDatosCAPEXCompleto(ws As Worksheet)
+    Dim fila As Integer
+    fila = 4
+    
+    ' ===== EQUIPOS PRINCIPALES =====
+    ws.Range("A" & fila).Value = "EQUIPOS PRINCIPALES"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    ws.Range("B" & fila).Value = "Sistema bomba calor completo"
+    ws.Range("C" & fila).Value = 1
+    ws.Range("D" & fila).Value = 285000
+    ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+    ws.Range("G" & fila).Value = "Incluye compresores, intercambiadores, controles"
+    fila = fila + 1
+    
+    ' ===== INSTRUMENTACIÓN Y CONTROL =====
+    ws.Range("A" & fila).Value = "INSTRUMENTACIÓN Y CONTROL"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    Dim datosInstr As Variant
+    datosInstr = Array( _
+        Array("PLC Siemens S7-1500", 1, 45000, "Control principal certificado"), _
+        Array("SCADA WinCC + 21 CFR Part 11", 1, 10000, "Interfaz farmacéutica"), _
+        Array("Sensores temperatura RTD (10x)", 4, 1200, "Precisión ±0.1°C"), _
+        Array("Caudalímetros certificados (3x)", 2, 4000, "Electromagnéticos sanitarios"), _
+        Array("Transductores presión SIL2 (4x)", 4, 2800, "Seguridad CO2"), _
+        Array("Analizadores calidad agua (2x)", 2, 8500, "TOC y conductividad") _
+    )
+    
+    Dim i As Integer
+    For i = 0 To UBound(datosInstr)
+        ws.Range("B" & fila).Value = datosInstr(i)(0)
+        ws.Range("C" & fila).Value = datosInstr(i)(1)
+        ws.Range("D" & fila).Value = datosInstr(i)(2)
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosInstr(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' ===== SISTEMAS AUXILIARES =====
+    ws.Range("A" & fila).Value = "SISTEMAS AUXILIARES"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    Dim datosAux As Variant
+    datosAux = Array( _
+        Array("Tuberías AISI 316L (120 m)", 60, 100, "Diámetros variables"), _
+        Array("Válvulas sanitarias (15x)", 3, 5800, "Tri-clamp neumáticas"), _
+        Array("Conexiones ASME BPE", 1, 3000, "Certificadas cGMP"), _
+        Array("Aislamiento térmico", 200, 85, "Lana mineral + chaqueta") _
+    )
+    
+    For i = 0 To UBound(datosAux)
+        ws.Range("B" & fila).Value = datosAux(i)(0)
+        ws.Range("C" & fila).Value = datosAux(i)(1)
+        ws.Range("D" & fila).Value = datosAux(i)(2)
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosAux(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' ===== INGENIERÍA =====
+    ws.Range("A" & fila).Value = "INGENIERÍA"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    Dim datosIng As Variant
+    datosIng = Array( _
+        Array("Ingeniería conceptual (240 h)", 240, 30, "Estudio factibilidad"), _
+        Array("Ingeniería básica (680 h)", 680, 30, "P&IDs y especificaciones"), _
+        Array("Ingeniería de detalle (1,200 h)", 1200, 30, "Planos construcción"), _
+        Array("Gestión de proyecto", 1, 10000, "PMO completo 18 meses") _
+    )
+    
+    For i = 0 To UBound(datosIng)
+        ws.Range("B" & fila).Value = datosIng(i)(0)
+        ws.Range("C" & fila).Value = datosIng(i)(1)
+        ws.Range("D" & fila).Value = datosIng(i)(2)
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosIng(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' ===== INSTALACIÓN =====
+    ws.Range("A" & fila).Value = "INSTALACIÓN"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    Dim datosInst As Variant
+    datosInst = Array( _
+        Array("Obra civil", 1, 10000, "Cimentaciones y bases"), _
+        Array("Instalación mecánica", 1, 35000, "Montaje equipos principales"), _
+        Array("Instalación eléctrica", 1, 50000, "Tableros y cableado"), _
+        Array("Integración hidráulica", 1, 10000, "Conexiones a sistemas existentes") _
+    )
+    
+    For i = 0 To UBound(datosInst)
+        ws.Range("B" & fila).Value = datosInst(i)(0)
+        ws.Range("C" & fila).Value = datosInst(i)(1)
+        ws.Range("D" & fila).Value = datosInst(i)(2)
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosInst(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' ===== VALIDACIÓN =====
+    ws.Range("A" & fila).Value = "VALIDACIÓN"
+    ws.Range("A" & fila).Font.Bold = True
+    ws.Range("A" & fila).Interior.Color = RGB(255, 160, 122)
+    fila = fila + 1
+    
+    Dim datosVal As Variant
+    datosVal = Array( _
+        Array("Commissioning", 1, 15000, "Puesta en marcha sistema"), _
+        Array("Validación IQ/OQ/PQ", 1, 20000, "Protocolos farmacéuticos"), _
+        Array("Mapeo térmico", 1, 18000, "Distribución temperaturas"), _
+        Array("Capacitación técnica", 1, 15000, "Personal operativo"), _
+        Array("Soporte primer año", 1, 12000, "Garantía extendida") _
+    )
+    
+    For i = 0 To UBound(datosVal)
+        ws.Range("B" & fila).Value = datosVal(i)(0)
+        ws.Range("C" & fila).Value = datosVal(i)(1)
+        ws.Range("D" & fila).Value = datosVal(i)(2)
+        ws.Range("E" & fila).Formula = "=C" & fila & "*D" & fila
+        ws.Range("G" & fila).Value = datosVal(i)(3)
+        fila = fila + 1
+    Next i
+    
+    ' Guardar última fila para resumen
+    ws.Range("ZZ1").Value = fila - 1
+End Sub
 
